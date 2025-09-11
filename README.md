@@ -86,10 +86,10 @@ To build from source:
 1. Clone the repository:  
    ```bash
    git clone https://github.com/WofflesAbdul/ExcelMergerSolution.git```
-   Open the solution in Visual Studio 2019 or later.
 
-2. Ensure that .NET Framework 4.8 is installed.
-3. Add a reference to Microsoft.Office.Interop.Excel (if missing).
-4. Right-click project → Add Reference → COM → Microsoft Excel XX.X Object Library
+2. Open the solution in Visual Studio 2019 or later.
+3. Ensure that .NET Framework 4.8 is installed.
+4. Add a reference to Microsoft.Office.Interop.Excel (if missing).
+   - Right-click project → Add Reference → COM → Microsoft Excel XX.X Object Library
 5. Build the solution (Ctrl+Shift+B).
 6. Run the WinForms project to launch the tool.
