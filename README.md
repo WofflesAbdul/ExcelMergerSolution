@@ -54,7 +54,8 @@ The sorter orders worksheets with a **three-level prioritization**:
    - Start Up Rise Time  
    - Hold-Up Time  
    - Turn Off Fall Time  
-   *(Full list now fully implemented in the tool’s Functional Test Sequence module.)*
+   
+   *(Full list now fully implemented in [FunctionalTestSequence.vb](Excel%20Handling/Module/FunctionalTestSequence.vb).)*
 
 2. **Vpsu Value**  
    Worksheets with `Vpsu = XX%` suffix are prioritized with higher percentages first.  
