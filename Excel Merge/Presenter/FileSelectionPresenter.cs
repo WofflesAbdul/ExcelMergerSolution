@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 
@@ -16,6 +17,8 @@ public class FileSelectionPresenter
     {
         this.view = view ?? throw new ArgumentNullException(nameof(view));
         model = new FileSelectionModel();
+
+        view.OpenFileClicked += (s, e) => OnOpenFileClicked();
     }
 
     public event EventHandler MergeRequested;
@@ -82,6 +85,7 @@ public class FileSelectionPresenter
     {
         bool enabled = !string.IsNullOrEmpty(model.BaseFilePath);
         view.SetSortButtonEnabled(enabled);
+        view.SetOpenFileButtonEnabled(enabled);
     }
 
     public void ClearTargetSelection()
@@ -97,9 +101,47 @@ public class FileSelectionPresenter
 
     public void OnResetClicked() => ResetRequested?.Invoke(this, EventArgs.Empty);
 
-    public void NotifyMergeCompleted() => MergeCompleted?.Invoke(this, EventArgs.Empty);
+    public void OnOpenFileClicked()
+    {
+        if (!string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = BaseFilePath,
+                UseShellExecute = true,
+            });
+        }
+    }
 
-    public void NotifySortCompleted() => SortCompleted?.Invoke(this, EventArgs.Empty);
+    public void NotifyMergeCompleted()
+    {
+        MergeCompleted?.Invoke(this, EventArgs.Empty);
+
+        var result = view.ShowPrompt("Merge completed! Do you want to open the merged file?", "Merge Completed");
+        if (result == DialogResult.Yes && !string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = BaseFilePath,
+                UseShellExecute = true
+            });
+        }
+    }
+
+    public void NotifySortCompleted()
+    {
+        SortCompleted?.Invoke(this, EventArgs.Empty);
+
+        var result = view.ShowPrompt("Sort completed! Do you want to open the sorted file?", "Sort Completed");
+        if (result == DialogResult.Yes && !string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = BaseFilePath,
+                UseShellExecute = true
+            });
+        }
+    }
 
     public void ResetSelection()
     {

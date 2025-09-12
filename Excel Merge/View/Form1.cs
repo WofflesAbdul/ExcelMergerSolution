@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -8,9 +9,10 @@ public partial class Form1 : Form, IFileSelectionView
 {
     private readonly FileSelectionPresenter presenter;
     private readonly List<Control> controlsToDisable = new List<Control>();
-    private readonly List<ToolStripButton> toolStripButtonsToDisable = new List<ToolStripButton>();
+    private readonly List<ToolStripMenuItem> toolStripButtonsToDisable = new List<ToolStripMenuItem>();
     private Dictionary<Control, bool> controlsStateBackup;
-    private Dictionary<ToolStripButton, bool> toolStripStateBackup;
+    private Dictionary<ToolStripMenuItem, bool> toolStripStateBackup;
+    private CancellationTokenSource progressAnimationCts;
 
     public event EventHandler MergeClicked;
 
@@ -18,20 +20,22 @@ public partial class Form1 : Form, IFileSelectionView
 
     public event EventHandler ResetClicked;
 
+    public event EventHandler OpenFileClicked;
+
     public Form1()
     {
         InitializeComponent();
         presenter = new FileSelectionPresenter(this);
 
         controlsToDisable.AddRange(new Control[] { button1, button2, button3, button4, });
-        toolStripButtonsToDisable.AddRange(new ToolStripButton[] { toolStripButton1, });
+        toolStripButtonsToDisable.AddRange(new ToolStripMenuItem[] { openFileToolStripMenuItem, resetToolStripMenuItem, });
 
         // Subscribe to requested events
         MergeClicked += (s, e) => presenter.OnMergeClicked();
         SortClicked += (s, e) => presenter.OnSortClicked();
         ResetClicked += (s, e) => presenter.OnResetClicked();
-        presenter.MergeRequested += async (s, e) => await RunMergeAsync(); // Task should do something with toolstripProgressBar
-        presenter.SortRequested += async (s, e) => await RunSortAsync();// Task should do something with toolstripProgressBar
+        presenter.MergeRequested += async (s, e) => await RunMergeAsync();
+        presenter.SortRequested += async (s, e) => await RunSortAsync();
         presenter.ResetRequested += (s, e) => presenter.ResetSelection();
     }
 
@@ -58,6 +62,11 @@ public partial class Form1 : Form, IFileSelectionView
         button4.Enabled = enabled;
     }
 
+    public void SetOpenFileButtonEnabled(bool enabled)
+    {
+        openFileToolStripMenuItem.Enabled = enabled;
+    }
+
     public void ApplyTaskControlLock(bool disableForTask)
     {
         if (!disableForTask)
@@ -70,7 +79,7 @@ public partial class Form1 : Form, IFileSelectionView
                 ctrl.Enabled = false; // disable
             }
 
-            toolStripStateBackup = new Dictionary<ToolStripButton, bool>();
+            toolStripStateBackup = new Dictionary<ToolStripMenuItem, bool>();
             foreach (var btn in toolStripButtonsToDisable)
             {
                 toolStripStateBackup[btn] = btn.Enabled;
@@ -117,6 +126,16 @@ public partial class Form1 : Form, IFileSelectionView
         toolStripProgressBar1.Value = percent;
     }
 
+    public DialogResult ShowPrompt(string message, string title)
+    {
+        return MessageBox.Show(
+            message,
+            title,
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question
+        );
+    }
+
     private void Form1_Load(object sender, EventArgs e)
     {
         toolStripLabel2.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -143,9 +162,14 @@ public partial class Form1 : Form, IFileSelectionView
         SortClicked?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ToolStripButton1_Click(object sender, EventArgs e)
+    private void ButtonReset_Click(object sender, EventArgs e)
     {
         ResetClicked?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ButtonOpenFile_Click(object sender, EventArgs e)
+    {
+        OpenFileClicked?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task RunMergeAsync()
@@ -190,13 +214,27 @@ public partial class Form1 : Form, IFileSelectionView
 
         try
         {
-            _ = AnimateProgressBarAsync(toolStripProgressBar1, 20, 500);
+            // Reset and start animation
+            toolStripProgressBar1.Value = 0;
+            progressAnimationCts = new CancellationTokenSource();
+            var animationTask = AnimateProgressBarAsync(toolStripProgressBar1, 20, 200, progressAnimationCts.Token);
 
+            // Run the sort
             var sorter = new Excel_Handling.FunctionalTestSorter();
-            await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath));
+            await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath)); // Once completed, the vb.net code exits here
 
+            // Cancel the animation once sorting is done
+            progressAnimationCts.Cancel();
+
+            try
+            {
+                await animationTask; // allow clean exit
+            }
+            catch (TaskCanceledException) { }
+
+            // Snap to 100%
             toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
-            MessageBox.Show("Sort completed!");
+            presenter.NotifySortCompleted();
         }
         catch (Exception ex)
         {
@@ -209,7 +247,7 @@ public partial class Form1 : Form, IFileSelectionView
         }
     }
 
-    private async Task AnimateProgressBarAsync(ToolStripProgressBar progressBar, int steps, int delayMs)
+    private async Task AnimateProgressBarAsync(ToolStripProgressBar progressBar, int steps, int delayMs, CancellationToken token)
     {
         progressBar.Value = 0;
         int maxValue = (int)(progressBar.Maximum * 0.9); // cap at 90%
@@ -217,7 +255,9 @@ public partial class Form1 : Form, IFileSelectionView
 
         for (int i = 1; i <= steps; i++)
         {
-            await Task.Delay(delayMs);
+            if (token.IsCancellationRequested) break;
+            await Task.Delay(delayMs, token);
+            if (token.IsCancellationRequested) break;
             progressBar.Value = Math.Min(stepValue * i, maxValue);
         }
     }
