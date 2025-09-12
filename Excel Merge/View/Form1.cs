@@ -192,7 +192,7 @@ public partial class Form1 : Form, IFileSelectionView
         {
             _ = AnimateProgressBarAsync(toolStripProgressBar1, 20, 500);
 
-            var sorter = new Excel_Handling.ExcelSorter();
+            var sorter = new Excel_Handling.FunctionalTestSorter();
             await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath));
 
             toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;

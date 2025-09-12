@@ -66,7 +66,9 @@
   <ItemGroup>
     <Compile Include="ExcelMerger.vb" />
     <Compile Include="ExcelSorter.vb" />
-    <Compile Include="Module\Sequence1.vb" />
+    <Compile Include="Module\TemperatureSequence.vb" />
+    <Compile Include="Module\VpsuSequence.vb" />
+    <Compile Include="Module\FunctionalTestSequence.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
