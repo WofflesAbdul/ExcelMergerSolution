@@ -19,6 +19,7 @@ public class FileSelectionPresenter
         model = new FileSelectionModel();
 
         view.OpenFileClicked += (s, e) => OnOpenFileClicked();
+        view.OpenFolderClicked += (s, e) => OnOpenFolderClicked();
     }
 
     public event EventHandler MergeRequested;
@@ -110,6 +111,23 @@ public class FileSelectionPresenter
                 FileName = BaseFilePath,
                 UseShellExecute = true,
             });
+        }
+    }
+
+    public void OnOpenFolderClicked()
+    {
+        if (!string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
+        {
+            string folderPath = Path.GetDirectoryName(BaseFilePath);
+
+            if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = folderPath,
+                    UseShellExecute = true
+                });
+            }
         }
     }
 

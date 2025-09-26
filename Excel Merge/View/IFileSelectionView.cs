@@ -11,6 +11,8 @@ public interface IFileSelectionView
 
     event EventHandler OpenFileClicked;
 
+    event EventHandler OpenFolderClicked;
+
     void UpdateBaseFileName(string name);
 
     void UpdateTargetFileNames(string names);

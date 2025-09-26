@@ -22,13 +22,15 @@ public partial class Form1 : Form, IFileSelectionView
 
     public event EventHandler OpenFileClicked;
 
+    public event EventHandler OpenFolderClicked;
+
     public Form1()
     {
         InitializeComponent();
         presenter = new FileSelectionPresenter(this);
 
         controlsToDisable.AddRange(new Control[] { button1, button2, button3, button4, });
-        toolStripButtonsToDisable.AddRange(new ToolStripMenuItem[] { openFileToolStripMenuItem, resetToolStripMenuItem, });
+        toolStripButtonsToDisable.AddRange(new ToolStripMenuItem[] { openFileToolStripMenuItem, openContainingFolderToolStripMenuItem, resetToolStripMenuItem, });
 
         // Subscribe to requested events
         MergeClicked += (s, e) => presenter.OnMergeClicked();
@@ -65,6 +67,7 @@ public partial class Form1 : Form, IFileSelectionView
     public void SetOpenFileButtonEnabled(bool enabled)
     {
         openFileToolStripMenuItem.Enabled = enabled;
+        openContainingFolderToolStripMenuItem.Enabled = enabled;
     }
 
     public void ApplyTaskControlLock(bool disableForTask)
@@ -170,6 +173,11 @@ public partial class Form1 : Form, IFileSelectionView
     private void ButtonOpenFile_Click(object sender, EventArgs e)
     {
         OpenFileClicked?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ButtonOpenFolder_Click(object sender, EventArgs e)
+    {
+        OpenFolderClicked?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task RunMergeAsync()
