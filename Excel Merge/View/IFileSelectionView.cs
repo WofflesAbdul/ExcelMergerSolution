@@ -15,6 +15,8 @@ public interface IFileSelectionView
 
     void UpdateBaseFileName(string name);
 
+    void UpdateBaseFileFolderName(string name);
+
     void UpdateTargetFileNames(string names);
 
     void SetMergeButtonEnabled(bool enabled);

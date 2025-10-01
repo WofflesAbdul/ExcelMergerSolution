@@ -47,6 +47,7 @@ public class FileSelectionPresenter
             {
                 model.BaseFilePath = dlg.FileName;
                 view.UpdateBaseFileName(Path.GetFileName(model.BaseFilePath));
+                view.UpdateBaseFileFolderName(Path.GetDirectoryName(model.BaseFilePath));
             }
         }
     }
@@ -166,6 +167,7 @@ public class FileSelectionPresenter
         model.BaseFilePath = null;
         model.TargetFilePaths.Clear();
         view.UpdateBaseFileName(string.Empty);
+        view.UpdateBaseFileFolderName(string.Empty);
         view.UpdateTargetFileNames(string.Empty);
         CheckMergeButtonState();
         CheckSortButtonState();

@@ -48,6 +48,11 @@ public partial class Form1 : Form, IFileSelectionView
         presenter.CheckSortButtonState();
     }
 
+    public void UpdateBaseFileFolderName(string name)
+    {
+        label4.Text = name;
+    }
+
     public void UpdateTargetFileNames(string names)
     {
         textBox2.Text = names;
