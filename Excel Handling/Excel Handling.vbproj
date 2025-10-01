@@ -64,6 +64,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelFileCreator.vb" />
     <Compile Include="ExcelMerger.vb" />
     <Compile Include="ExcelSorter.vb" />
     <Compile Include="Module\TemperatureSequence.vb" />

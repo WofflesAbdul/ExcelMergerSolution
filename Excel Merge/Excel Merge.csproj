@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Model\FileSelectionModel.cs" />
     <Compile Include="Presenter\FileSelectionPresenter.cs" />
+    <Compile Include="Presenter\BaseFileMode.cs" />
     <Compile Include="View\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

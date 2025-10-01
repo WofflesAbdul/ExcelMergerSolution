@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Excel_Handling;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,6 +21,7 @@ public class FileSelectionPresenter
 
         view.OpenFileClicked += (s, e) => OnOpenFileClicked();
         view.OpenFolderClicked += (s, e) => OnOpenFolderClicked();
+        view.BaseFileModeChanged += (s, mode) => OnBaseFileModeSelectionChanged(mode);
     }
 
     public event EventHandler MergeRequested;
@@ -34,21 +36,32 @@ public class FileSelectionPresenter
 
     public string BaseFilePath => model.BaseFilePath;
 
+    public bool UseDvtReportTemplateExcel => false; // TODO: Form1 Checkbox check state
+
     public IReadOnlyList<string> TargetFilePaths => model.TargetFilePaths.AsReadOnly();
 
-    public void SelectBaseFile()
+    public void SelectBaseFile(string newlyCreatedBaseFile = null)
     {
-        using (OpenFileDialog dlg = new OpenFileDialog())
+        if (string.IsNullOrEmpty(newlyCreatedBaseFile))
         {
-            dlg.Filter = "Excel Files|*.xlsx;*.xls";
-            dlg.Title = "Select Base Excel File";
-
-            if (dlg.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                model.BaseFilePath = dlg.FileName;
-                view.UpdateBaseFileName(Path.GetFileName(model.BaseFilePath));
-                view.UpdateBaseFileFolderName(Path.GetDirectoryName(model.BaseFilePath));
+                dlg.Filter = "Excel Files|*.xlsx;*.xls";
+                dlg.Title = "Select Base Excel File";
+
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    model.BaseFilePath = dlg.FileName;
+                    view.UpdateBaseFileName(Path.GetFileName(model.BaseFilePath));
+                    view.UpdateBaseFileFolderName(Path.GetDirectoryName(model.BaseFilePath));
+                }
             }
+        }
+        else
+        {
+            model.BaseFilePath = newlyCreatedBaseFile;
+            view.UpdateBaseFileName(Path.GetFileName(model.BaseFilePath));
+            view.UpdateBaseFileFolderName(Path.GetDirectoryName(model.BaseFilePath));
         }
     }
 
@@ -79,7 +92,22 @@ public class FileSelectionPresenter
 
     public void CheckMergeButtonState()
     {
-        bool enabled = !string.IsNullOrEmpty(model.BaseFilePath) && model.TargetFilePaths.Count > 0;
+        bool enabled = false;
+
+        switch (view.CurrentBaseFileMode)
+        {
+            case BaseFileModeSelection.UseExistingFile:
+                enabled = !string.IsNullOrEmpty(model.BaseFilePath)
+                          && model.TargetFilePaths.Count > 0;
+                break;
+
+            case BaseFileModeSelection.CreateNewFile:
+                enabled = !string.IsNullOrEmpty(model.NewBaseFilename)
+                          && !string.IsNullOrEmpty(model.NewBaseDirectoryPath)
+                          && model.TargetFilePaths.Count > 0;
+                break;
+        }
+
         view.SetMergeButtonEnabled(enabled);
     }
 
@@ -95,6 +123,16 @@ public class FileSelectionPresenter
         model.TargetFilePaths.Clear();
         view.UpdateTargetFileNames(string.Empty);
         CheckMergeButtonState(); // disable merge button
+    }
+
+    public void OnBaseFileModeSelectionChanged(BaseFileModeSelection mode)
+    {
+        // Reset any value stored prior to selection change
+        model.NewBaseDirectoryPath = null;
+        model.NewBaseDirectoryPath = null;
+        model.BaseFilePath = null;
+        view.UpdateUIForBaseFileSelectionMode();
+        CheckMergeButtonState();
     }
 
     public void OnMergeClicked() => MergeRequested?.Invoke(this, EventArgs.Empty);
@@ -132,6 +170,30 @@ public class FileSelectionPresenter
         }
     }
 
+    public void OnNewBaseFilenameEntered(string filename)
+    {
+        model.NewBaseFilename = filename;
+        CheckMergeButtonState();
+    }
+
+    public void OnNewBaseFileTargetLocationChanged()
+    {
+        using (var dlg = new FolderBrowserDialog())
+        {
+            dlg.Description = "Select folder for new Base Excel file";
+            dlg.ShowNewFolderButton = true;
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                model.NewBaseDirectoryPath = dlg.SelectedPath;
+                view.UpdateBaseFileFolderName(model.NewBaseDirectoryPath);
+                // Excel file to be created upon OnMergeClicked
+            }
+        }
+
+        CheckMergeButtonState();
+    }
+
     public void NotifyMergeCompleted()
     {
         MergeCompleted?.Invoke(this, EventArgs.Empty);
@@ -166,7 +228,10 @@ public class FileSelectionPresenter
     {
         model.BaseFilePath = null;
         model.TargetFilePaths.Clear();
+        model.NewBaseFilename = null;
+        model.NewBaseDirectoryPath = null;
         view.UpdateBaseFileName(string.Empty);
+        view.UpdateUIForBaseFileSelectionMode();
         view.UpdateBaseFileFolderName(string.Empty);
         view.UpdateTargetFileNames(string.Empty);
         CheckMergeButtonState();
@@ -174,4 +239,50 @@ public class FileSelectionPresenter
     }
 
     public void SetProgress(int percent) => view.SetProgress(percent);
+
+    public string CreateNewBaseFile()
+    {
+        if (string.IsNullOrWhiteSpace(model.NewBaseDirectoryPath) ||
+            string.IsNullOrWhiteSpace(model.NewBaseFilename))
+        {
+            throw new InvalidOperationException("New base file path or filename is not set.");
+        }
+
+        string fullPath = Path.Combine(
+            model.NewBaseDirectoryPath,
+            model.NewBaseFilename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
+                ? model.NewBaseFilename
+                : model.NewBaseFilename + ".xlsx"
+        );
+
+        var creator = new ExcelFileCreator();
+        bool success = creator.CreateNewExcel(fullPath);
+
+        if (!success)
+        {
+            throw new IOException($"Failed to create new Excel file at {fullPath}");
+        }
+
+        // Track placeholder sheet for later removal
+        bool hasPlaceholderSheet = creator.HasPlaceholderSheet;
+
+        // Keep model consistent
+        model.BaseFilePath = fullPath;
+
+        // Optionally store the creator if you want to remove the placeholder later
+        _lastExcelCreator = hasPlaceholderSheet ? creator : null;
+
+        return fullPath;
+    }
+
+    // New field in presenter
+    private ExcelFileCreator _lastExcelCreator;
+
+    // Call this after merge if needed
+    public void RemovePlaceholderIfNeeded()
+    {
+        _lastExcelCreator?.RemovePlaceholderSheet(model.BaseFilePath);
+        _lastExcelCreator = null;
+    }
+
 }

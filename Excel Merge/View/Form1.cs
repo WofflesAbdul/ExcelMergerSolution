@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using System.Windows.Forms;
 
 public partial class Form1 : Form, IFileSelectionView
 {
+    private const string PlaceholderDuringCreateNewMode = "Enter filename here";
     private readonly FileSelectionPresenter presenter;
     private readonly List<Control> controlsToDisable = new List<Control>();
     private readonly List<ToolStripMenuItem> toolStripButtonsToDisable = new List<ToolStripMenuItem>();
@@ -24,6 +26,8 @@ public partial class Form1 : Form, IFileSelectionView
 
     public event EventHandler OpenFolderClicked;
 
+    public event EventHandler<BaseFileModeSelection> BaseFileModeChanged;
+
     public Form1()
     {
         InitializeComponent();
@@ -39,7 +43,10 @@ public partial class Form1 : Form, IFileSelectionView
         presenter.MergeRequested += async (s, e) => await RunMergeAsync();
         presenter.SortRequested += async (s, e) => await RunSortAsync();
         presenter.ResetRequested += (s, e) => presenter.ResetSelection();
+        rbUseExistingFile.Checked = true;
     }
+
+    public BaseFileModeSelection CurrentBaseFileMode => rbUseExistingFile.Checked ? BaseFileModeSelection.UseExistingFile : rbCreateNewFile.Checked ? BaseFileModeSelection.CreateNewFile : throw new InvalidOperationException();
 
     public void UpdateBaseFileName(string name)
     {
@@ -144,6 +151,25 @@ public partial class Form1 : Form, IFileSelectionView
         );
     }
 
+    public void UpdateUIForBaseFileSelectionMode()
+    {
+        textBox1.Text = string.Empty;
+        label4.Text = string.Empty;
+        switch (CurrentBaseFileMode)
+        {
+            case BaseFileModeSelection.UseExistingFile:
+                textBox1.ReadOnly = true;          // cannot edit filename
+                button1.Text = "Select File";
+                break;
+
+            case BaseFileModeSelection.CreateNewFile:
+                textBox1.ReadOnly = false;         // user can type filename
+                TextBox1_Leave(textBox1, EventArgs.Empty);
+                button1.Text = "Select Folder";
+                break;
+        }
+    }
+
     private void Form1_Load(object sender, EventArgs e)
     {
         toolStripLabel2.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -152,7 +178,16 @@ public partial class Form1 : Form, IFileSelectionView
 
     private void Button1_Click(object sender, EventArgs e)
     {
-        presenter.SelectBaseFile();
+        switch (CurrentBaseFileMode)
+        {
+            case BaseFileModeSelection.UseExistingFile:
+                presenter.SelectBaseFile();
+                break;
+
+            case BaseFileModeSelection.CreateNewFile:
+                presenter.OnNewBaseFileTargetLocationChanged();
+                break;
+        }
     }
 
     private void Button2_Click(object sender, EventArgs e)
@@ -185,10 +220,78 @@ public partial class Form1 : Form, IFileSelectionView
         OpenFolderClicked?.Invoke(this, EventArgs.Empty);
     }
 
+    private void RbUseExistingFile_CheckedChanged(object sender, EventArgs e)
+    {
+        if (rbUseExistingFile.Checked)
+        {
+            BaseFileModeChanged?.Invoke(this, BaseFileModeSelection.UseExistingFile);
+        }
+    }
+
+    private void RbCreateNewFile_CheckedChanged(object sender, EventArgs e)
+    {
+        if (rbCreateNewFile.Checked)
+        {
+            BaseFileModeChanged?.Invoke(this, BaseFileModeSelection.CreateNewFile);
+        }
+    }
+
+    private void TextBox1_Enter(object sender, EventArgs e)
+    {
+        if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile &&
+            textBox1.Text == PlaceholderDuringCreateNewMode)
+        {
+            // Clear placeholder
+            textBox1.Text = string.Empty;
+            textBox1.ForeColor = SystemColors.WindowText;
+            textBox1.Font = new Font(textBox1.Font, FontStyle.Regular);
+
+            // Clear the model value as user starts typing
+        }
+    }
+
+    private void TextBox1_Leave(object sender, EventArgs e)
+    {
+        if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                // Restore placeholder if empty
+                textBox1.Text = PlaceholderDuringCreateNewMode;
+                textBox1.ForeColor = SystemColors.GrayText;
+                textBox1.Font = new Font(textBox1.Font, FontStyle.Italic);
+
+                presenter.OnNewBaseFilenameEntered(null);
+            }
+            else if (textBox1.Text != PlaceholderDuringCreateNewMode)
+            {
+                // Save user input in model
+                presenter.OnNewBaseFilenameEntered(textBox1.Text.Trim());
+            }
+        }
+    }
+
+    private void TextBox1_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Enter && CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
+        {
+            e.SuppressKeyPress = true; // Prevent newline
+            this.SelectNextControl(textBox1, forward: true, tabStopOnly: true, nested: true, wrap: true);
+        }
+    }
+
     private async Task RunMergeAsync()
     {
         ApplyTaskControlLock(false);
         presenter.SetProgress(0); // reset
+
+        if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
+        {
+            string tempBaseFilePath = presenter.CreateNewBaseFile();
+
+            rbUseExistingFile.Checked = true; // now new file exist, hence use existing, this resets some model property and UI
+            presenter.SelectBaseFile(tempBaseFilePath); // reassigned model property and UI
+        }
 
         try
         {
@@ -202,8 +305,13 @@ public partial class Form1 : Form, IFileSelectionView
                 );
             });
 
+            // If the base file was created as a blank workbook, remove the placeholder sheet
+            if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
+            {
+                presenter.RemovePlaceholderIfNeeded();
+            }
+
             presenter.NotifyMergeCompleted();
-            MessageBox.Show("Merge completed!");
         }
         catch (Exception ex)
         {
