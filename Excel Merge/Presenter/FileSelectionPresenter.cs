@@ -204,7 +204,7 @@ public class FileSelectionPresenter
             Process.Start(new ProcessStartInfo
             {
                 FileName = BaseFilePath,
-                UseShellExecute = true
+                UseShellExecute = true,
             });
         }
     }
@@ -248,41 +248,25 @@ public class FileSelectionPresenter
             throw new InvalidOperationException("New base file path or filename is not set.");
         }
 
-        string fullPath = Path.Combine(
-            model.NewBaseDirectoryPath,
-            model.NewBaseFilename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
-                ? model.NewBaseFilename
-                : model.NewBaseFilename + ".xlsx"
-        );
+        string fullPath = Path.Combine(model.NewBaseDirectoryPath, model.NewBaseFilename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) ? model.NewBaseFilename : model.NewBaseFilename + ".xlsx");
 
-        var creator = new ExcelFileCreator();
-        bool success = creator.CreateNewExcel(fullPath);
+
+        bool success = ExcelFileCreator.CreateNewExcel(fullPath);
 
         if (!success)
         {
             throw new IOException($"Failed to create new Excel file at {fullPath}");
         }
 
-        // Track placeholder sheet for later removal
-        bool hasPlaceholderSheet = creator.HasPlaceholderSheet;
-
         // Keep model consistent
         model.BaseFilePath = fullPath;
-
-        // Optionally store the creator if you want to remove the placeholder later
-        _lastExcelCreator = hasPlaceholderSheet ? creator : null;
-
         return fullPath;
     }
-
-    // New field in presenter
-    private ExcelFileCreator _lastExcelCreator;
 
     // Call this after merge if needed
     public void RemovePlaceholderIfNeeded()
     {
-        _lastExcelCreator?.RemovePlaceholderSheet(model.BaseFilePath);
-        _lastExcelCreator = null;
+        ExcelFileCreator.RemovePlaceholderSheets(model.BaseFilePath);
     }
 
 }
