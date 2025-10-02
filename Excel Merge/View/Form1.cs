@@ -305,12 +305,7 @@ public partial class Form1 : Form, IFileSelectionView
                 );
             });
 
-            // If the base file was created as a blank workbook, remove the placeholder sheet
-            if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
-            {
-                presenter.RemovePlaceholderIfNeeded();
-            }
-
+            presenter.RemovePlaceholderIfNeeded();
             presenter.NotifyMergeCompleted();
         }
         catch (Exception ex)
