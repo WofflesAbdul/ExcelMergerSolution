@@ -46,13 +46,16 @@ public partial class Form1 : Form, IFileSelectionView
         rbUseExistingFile.Checked = true;
     }
 
-    public BaseFileModeSelection CurrentBaseFileMode => rbUseExistingFile.Checked ? BaseFileModeSelection.UseExistingFile : rbCreateNewFile.Checked ? BaseFileModeSelection.CreateNewFile : throw new InvalidOperationException();
+    public BaseFileModeSelection CurrentBaseFileMode =>
+        rbUseExistingFile.Checked
+            ? BaseFileModeSelection.UseExistingFile
+            : rbCreateNewFile.Checked
+                ? BaseFileModeSelection.CreateNewFile
+                : throw new InvalidOperationException();
 
     public void UpdateBaseFileName(string name)
     {
         textBox1.Text = name;
-        presenter.CheckMergeButtonState();
-        presenter.CheckSortButtonState();
     }
 
     public void UpdateBaseFileFolderName(string name)
@@ -63,7 +66,6 @@ public partial class Form1 : Form, IFileSelectionView
     public void UpdateTargetFileNames(string names)
     {
         textBox2.Text = names;
-        presenter.CheckMergeButtonState();
     }
 
     public void SetMergeButtonEnabled(bool enabled)
@@ -86,12 +88,12 @@ public partial class Form1 : Form, IFileSelectionView
     {
         if (!disableForTask)
         {
-            // Initialize backup dictionaries
+            // Disable controls
             controlsStateBackup = new Dictionary<Control, bool>();
             foreach (var ctrl in controlsToDisable)
             {
-                controlsStateBackup[ctrl] = ctrl.Enabled; // store current state
-                ctrl.Enabled = false; // disable
+                controlsStateBackup[ctrl] = ctrl.Enabled;
+                ctrl.Enabled = false;
             }
 
             toolStripStateBackup = new Dictionary<ToolStripMenuItem, bool>();
@@ -120,7 +122,6 @@ public partial class Form1 : Form, IFileSelectionView
                 }
             }
 
-            // Clear backups
             controlsStateBackup?.Clear();
             toolStripStateBackup?.Clear();
         }
@@ -158,12 +159,12 @@ public partial class Form1 : Form, IFileSelectionView
         switch (CurrentBaseFileMode)
         {
             case BaseFileModeSelection.UseExistingFile:
-                textBox1.ReadOnly = true;          // cannot edit filename
+                textBox1.ReadOnly = true;
                 button1.Text = "Select File";
                 break;
 
             case BaseFileModeSelection.CreateNewFile:
-                textBox1.ReadOnly = false;         // user can type filename
+                textBox1.ReadOnly = false;
                 TextBox1_Leave(textBox1, EventArgs.Empty);
                 button1.Text = "Select Folder";
                 break;
@@ -183,42 +184,23 @@ public partial class Form1 : Form, IFileSelectionView
             case BaseFileModeSelection.UseExistingFile:
                 presenter.SelectBaseFile();
                 break;
-
             case BaseFileModeSelection.CreateNewFile:
                 presenter.OnNewBaseFileTargetLocationChanged();
                 break;
         }
     }
 
-    private void Button2_Click(object sender, EventArgs e)
-    {
-        presenter.SelectTargetFiles();
-    }
+    private void Button2_Click(object sender, EventArgs e) => presenter.SelectTargetFiles();
 
-    private void Button3_Click(object sender, EventArgs e)
-    {
-        MergeClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void Button3_Click(object sender, EventArgs e) => MergeClicked?.Invoke(this, EventArgs.Empty);
 
-    private void Button4_Click(object sender, EventArgs e)
-    {
-        SortClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void Button4_Click(object sender, EventArgs e) => SortClicked?.Invoke(this, EventArgs.Empty);
 
-    private void ButtonReset_Click(object sender, EventArgs e)
-    {
-        ResetClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void ButtonReset_Click(object sender, EventArgs e) => ResetClicked?.Invoke(this, EventArgs.Empty);
 
-    private void ButtonOpenFile_Click(object sender, EventArgs e)
-    {
-        OpenFileClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void ButtonOpenFile_Click(object sender, EventArgs e) => OpenFileClicked?.Invoke(this, EventArgs.Empty);
 
-    private void ButtonOpenFolder_Click(object sender, EventArgs e)
-    {
-        OpenFolderClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void ButtonOpenFolder_Click(object sender, EventArgs e) => OpenFolderClicked?.Invoke(this, EventArgs.Empty);
 
     private void RbUseExistingFile_CheckedChanged(object sender, EventArgs e)
     {
@@ -241,12 +223,9 @@ public partial class Form1 : Form, IFileSelectionView
         if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile &&
             textBox1.Text == PlaceholderDuringCreateNewMode)
         {
-            // Clear placeholder
             textBox1.Text = string.Empty;
             textBox1.ForeColor = SystemColors.WindowText;
             textBox1.Font = new Font(textBox1.Font, FontStyle.Regular);
-
-            // Clear the model value as user starts typing
         }
     }
 
@@ -256,16 +235,13 @@ public partial class Form1 : Form, IFileSelectionView
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text))
             {
-                // Restore placeholder if empty
                 textBox1.Text = PlaceholderDuringCreateNewMode;
                 textBox1.ForeColor = SystemColors.GrayText;
                 textBox1.Font = new Font(textBox1.Font, FontStyle.Italic);
-
                 presenter.OnNewBaseFilenameEntered(null);
             }
             else if (textBox1.Text != PlaceholderDuringCreateNewMode)
             {
-                // Save user input in model
                 presenter.OnNewBaseFilenameEntered(textBox1.Text.Trim());
             }
         }
@@ -275,22 +251,22 @@ public partial class Form1 : Form, IFileSelectionView
     {
         if (e.KeyCode == Keys.Enter && CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
         {
-            e.SuppressKeyPress = true; // Prevent newline
-            this.SelectNextControl(textBox1, forward: true, tabStopOnly: true, nested: true, wrap: true);
+            e.SuppressKeyPress = true;
+            this.SelectNextControl(textBox1, true, true, true, true);
         }
     }
 
     private async Task RunMergeAsync()
     {
         ApplyTaskControlLock(false);
-        presenter.SetProgress(0); // reset
+        presenter.SetProgress(0);
 
         if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
         {
             string tempBaseFilePath = presenter.CreateNewBaseFile();
-
-            rbUseExistingFile.Checked = true; // now new file exist, hence use existing, this resets some model property and UI
-            presenter.SelectBaseFile(tempBaseFilePath); // reassigned model property and UI
+            rbUseExistingFile.Checked = true;
+            presenter.SelectBaseFile(tempBaseFilePath);
+            ApplyTaskControlLock(false);
         }
 
         try
@@ -310,47 +286,34 @@ public partial class Form1 : Form, IFileSelectionView
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Merge failed: {ex.Message}",
-                "Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
+            MessageBox.Show($"Merge failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
             ApplyTaskControlLock(true);
             presenter.ClearTargetSelection();
-            presenter.SetProgress(0); // reset
+            presenter.SetProgress(0);
         }
     }
 
     private async Task RunSortAsync()
     {
         ApplyTaskControlLock(false);
+        progressAnimationCts = new CancellationTokenSource();
 
         try
         {
-            // Reset and start animation
             toolStripProgressBar1.Value = 0;
-            progressAnimationCts = new CancellationTokenSource();
             var animationTask = AnimateProgressBarAsync(toolStripProgressBar1, 20, 200, progressAnimationCts.Token);
 
-            // Run the sort
             var sorter = new Excel_Handling.FunctionalTestSorter();
-            await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath)); // Once completed, the vb.net code exits here
+            await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath));
 
-            // Cancel the animation once sorting is done
-            progressAnimationCts.Cancel();
-
-            try
-            {
-                await animationTask; // allow clean exit
-            }
-            catch (TaskCanceledException) { }
-
-            // Snap to 100%
             toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
             presenter.NotifySortCompleted();
+
+            progressAnimationCts.Cancel();
+            await animationTask;
         }
         catch (Exception ex)
         {
@@ -358,6 +321,7 @@ public partial class Form1 : Form, IFileSelectionView
         }
         finally
         {
+            progressAnimationCts?.Cancel();
             ApplyTaskControlLock(true);
             toolStripProgressBar1.Value = 0;
         }
@@ -366,7 +330,7 @@ public partial class Form1 : Form, IFileSelectionView
     private async Task AnimateProgressBarAsync(ToolStripProgressBar progressBar, int steps, int delayMs, CancellationToken token)
     {
         progressBar.Value = 0;
-        int maxValue = (int)(progressBar.Maximum * 0.9); // cap at 90%
+        int maxValue = (int)(progressBar.Maximum * 0.9);
         int stepValue = maxValue / steps;
 
         for (int i = 1; i <= steps; i++)
