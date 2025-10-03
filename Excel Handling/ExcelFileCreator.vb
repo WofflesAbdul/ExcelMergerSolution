@@ -15,9 +15,8 @@ Public NotInheritable Class ExcelFileCreator
     ''' Optionally adds a "Placeholder" sheet to mark blank workbooks.
     ''' </summary>
     ''' <param name="fullPath">Full file path including filename.xlsx</param>
-    ''' <param name="addPlaceholder">True to create with Placeholder sheet, False for default blank workbook</param>
     ''' <returns>True if file was successfully created and exists, otherwise False</returns>
-    Public Shared Function CreateNewExcel(fullPath As String, Optional addPlaceholder As Boolean = False) As Boolean
+    Public Shared Function CreateNewExcel(fullPath As String) As Boolean
         If String.IsNullOrWhiteSpace(fullPath) Then
             Throw New ArgumentException("File path cannot be null or empty.", NameOf(fullPath))
         End If
@@ -37,14 +36,6 @@ Public NotInheritable Class ExcelFileCreator
 
             ' Create new workbook
             wb = excelApp.Workbooks.Add()
-
-            If addPlaceholder Then
-                ' Rename the first sheet to Placeholder
-                If wb.Sheets.Count > 0 Then
-                    wb.Sheets(1).Name = "Placeholder"
-                End If
-            End If
-
             wb.SaveAs(fullPath)
             wb.Close(SaveChanges:=True)
 
