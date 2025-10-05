@@ -1,67 +1,55 @@
-﻿using Excel_Handling;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Excel_Handling;
 
-public class FileSelectionPresenter
+public class FileSelectionPresenter : IFileSelectionPresenter
 {
     private readonly IFileSelectionView view;
     private readonly FileSelectionModel model;
+    private CancellationTokenSource progressAnimationCts;
 
-    public FileSelectionPresenter(IFileSelectionView view)
+    public FileSelectionPresenter(FileSelectionModel model, IFileSelectionView view)
     {
+        this.model = model ?? throw new ArgumentNullException(nameof(model));
         this.view = view ?? throw new ArgumentNullException(nameof(view));
-        model = new FileSelectionModel();
 
+        // GUI triggers → presenter
         view.OpenFileClicked += (s, e) => OnOpenFileClicked();
         view.OpenFolderClicked += (s, e) => OnOpenFolderClicked();
-        view.BaseFileModeChanged += (s, mode) => OnBaseFileModeSelectionChanged(mode);
+        view.InputFileModeChanged += (s, mode) => OnInputFileModeChanged();
+
+        view.MergeRequested += (s, e) => RunMerge();
+        view.SortRequested += (s, e) => RunSort();
+        view.CreateNewFileRequested += (s, e) => RunCreateNewBaseFile();
+        view.ResetRequested += (s, e) => OnReset();
     }
 
-    public event EventHandler MergeRequested;
+    public event EventHandler<TaskCompletedEventArgs> TaskCompleted;
 
-    public event EventHandler MergeCompleted;
+    public string BaseFilePath => model.ExistingBaseFilePath;
 
-    public event EventHandler SortRequested;
+    public string NewBaseDirectoryPath => model.DirectoryPath;
 
-    public event EventHandler SortCompleted;
-
-    public event EventHandler ResetRequested;
-
-    public string BaseFilePath => model.BaseFilePath;
-
-    public bool UseDvtReportTemplateExcel => false;
+    public string NewBaseFilename => model.NewFileName;
 
     public IReadOnlyList<string> TargetFilePaths => model.TargetFilePaths.AsReadOnly();
 
     public void SelectBaseFile(string newlyCreatedBaseFile = null)
     {
-        if (string.IsNullOrEmpty(newlyCreatedBaseFile))
+        using (OpenFileDialog dlg = new OpenFileDialog())
         {
-            using (OpenFileDialog dlg = new OpenFileDialog())
-            {
-                dlg.Filter = "Excel Files|*.xlsx;*.xls";
-                dlg.Title = "Select Base Excel File";
+            dlg.Filter = "Excel Files|*.xlsx;*.xls";
+            dlg.Title = "Select Base Excel File";
 
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
-                    model.BaseFilePath = dlg.FileName;
-                    view.UpdateBaseFileName(Path.GetFileName(model.BaseFilePath));
-                    view.UpdateBaseFileFolderName(Path.GetDirectoryName(model.BaseFilePath));
-                    CheckSortButtonState();
-                    CheckMergeButtonState();
-                }
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                SetBaseFile(dlg.FileName);
             }
-        }
-        else
-        {
-            model.BaseFilePath = newlyCreatedBaseFile;
-            view.UpdateBaseFileName(Path.GetFileName(model.BaseFilePath));
-            view.UpdateBaseFileFolderName(Path.GetDirectoryName(model.BaseFilePath));
-            CheckSortButtonState();
-            CheckMergeButtonState();
         }
     }
 
@@ -85,64 +73,29 @@ public class FileSelectionPresenter
                 }
 
                 string displayText = string.Join(", ", quotedNames);
-                view.UpdateTargetFileNames(displayText);
-
-                CheckMergeButtonState();
+                view.UpdateTargetFilenames(displayText);
             }
         }
     }
 
-    public void CheckMergeButtonState()
+    public void OnFilenameSet(string filename) => model.NewFileName = filename;
+
+    public void OnDirectorySet(string directoryPath) => model.DirectoryPath = directoryPath;
+
+    public void OnReset()
     {
-        bool enabled = false;
-
-        switch (view.CurrentBaseFileMode)
-        {
-            case BaseFileModeSelection.UseExistingFile:
-                enabled = !string.IsNullOrEmpty(model.BaseFilePath)
-                    && model.TargetFilePaths.Count > 0;
-                break;
-
-            case BaseFileModeSelection.CreateNewFile:
-                enabled = !string.IsNullOrEmpty(model.NewBaseFilename) 
-                    && !string.IsNullOrEmpty(model.NewBaseDirectoryPath)
-                    && model.TargetFilePaths.Count > 0;
-                break;
-        }
-
-        view.SetMergeButtonEnabled(enabled);
-    }
-
-    public void CheckSortButtonState()
-    {
-        bool enabled = !string.IsNullOrEmpty(model.BaseFilePath);
-        view.SetSortButtonEnabled(enabled);
-        view.SetOpenFileButtonEnabled(enabled);
-    }
-
-    public void ClearTargetSelection()
-    {
+        model.ExistingBaseFilePath = null;
+        model.NewFileName = null;
+        model.DirectoryPath = null;
         model.TargetFilePaths.Clear();
-        view.UpdateTargetFileNames(string.Empty);
-        CheckMergeButtonState();
     }
 
-    public void OnBaseFileModeSelectionChanged(BaseFileModeSelection mode)
+    public void OnInputFileModeChanged()
     {
-        // Reset any value stored prior to selection change
-        model.NewBaseDirectoryPath = null;
-        model.NewBaseFilename = null;
-        model.BaseFilePath = null;
-        view.UpdateUIForBaseFileSelectionMode();
-        CheckMergeButtonState();
-        CheckSortButtonState();
+        model.ExistingBaseFilePath = null;
+        model.NewFileName = null;
+        model.DirectoryPath = null;
     }
-
-    public void OnMergeClicked() => MergeRequested?.Invoke(this, EventArgs.Empty);
-
-    public void OnSortClicked() => SortRequested?.Invoke(this, EventArgs.Empty);
-
-    public void OnResetClicked() => ResetRequested?.Invoke(this, EventArgs.Empty);
 
     public void OnOpenFileClicked()
     {
@@ -158,107 +111,97 @@ public class FileSelectionPresenter
 
     public void OnOpenFolderClicked()
     {
+        string folderPath;
+
         if (!string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
         {
-            string folderPath = Path.GetDirectoryName(BaseFilePath);
-
-            if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = folderPath,
-                    UseShellExecute = true
-                });
-            }
+            folderPath = Path.GetDirectoryName(BaseFilePath);
         }
-    }
-
-    public void OnNewBaseFilenameEntered(string filename)
-    {
-        model.NewBaseFilename = filename;
-        CheckMergeButtonState();
-    }
-
-    public void OnNewBaseFileTargetLocationChanged()
-    {
-        using (var dlg = new FolderBrowserDialog())
+        else if (!string.IsNullOrEmpty(NewBaseDirectoryPath) && Directory.Exists(NewBaseDirectoryPath))
         {
-            dlg.Description = "Select folder for new Base Excel file";
-            dlg.ShowNewFolderButton = true;
-
-            if (dlg.ShowDialog() == DialogResult.OK)
-            {
-                model.NewBaseDirectoryPath = dlg.SelectedPath;
-                view.UpdateBaseFileFolderName(model.NewBaseDirectoryPath);
-            }
+            folderPath = NewBaseDirectoryPath;
         }
-
-        CheckMergeButtonState();
-    }
-
-    public void NotifyMergeCompleted()
-    {
-        MergeCompleted?.Invoke(this, EventArgs.Empty);
-
-        var result = view.ShowPrompt("Merge completed! Do you want to open the merged file?", "Merge Completed");
-        if (result == DialogResult.Yes && !string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
+        else
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = BaseFilePath,
-                UseShellExecute = true,
-            });
+            return;
         }
-    }
 
-    public void NotifySortCompleted()
-    {
-        SortCompleted?.Invoke(this, EventArgs.Empty);
-
-        var result = view.ShowPrompt("Sort completed! Do you want to open the sorted file?", "Sort Completed");
-        if (result == DialogResult.Yes && !string.IsNullOrEmpty(BaseFilePath) && File.Exists(BaseFilePath))
+        Process.Start(new ProcessStartInfo
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = BaseFilePath,
-                UseShellExecute = true
-            });
-        }
+            FileName = folderPath,
+            UseShellExecute = true,
+        });
     }
 
-    public void ResetSelection()
+    public void OnModelStateChanged(object sender, ModelStateChangedEventArgs e)
     {
-        model.BaseFilePath = null;
-        model.TargetFilePaths.Clear();
-        model.NewBaseFilename = null;
-        model.NewBaseDirectoryPath = null;
-        view.UpdateBaseFileName(string.Empty);
-        view.UpdateUIForBaseFileSelectionMode();
-        view.UpdateBaseFileFolderName(string.Empty);
-        view.UpdateTargetFileNames(string.Empty);
-        CheckMergeButtonState();
-        CheckSortButtonState();
+        view.SetMergeButtonEnabled(e.CanMerge);
+        view.SetSortButtonEnabled(e.HasValidBaseFile);
+        view.SetOpenFileButtonEnabled(e.HasValidBaseFile);
+        view.SetOpenFolderButtonEnabled(e.HasDirectoryPath);
     }
 
-    public void SetProgress(int percent) => view.SetProgress(percent);
-
-    public string CreateNewBaseFile()
+    public void RunMerge()
     {
-        if (string.IsNullOrEmpty(model.NewBaseDirectoryPath) ||
-            string.IsNullOrEmpty(model.NewBaseFilename))
+        view.LockControls(true);
+        view.SetProgress(0);
+
+        try
         {
-            throw new InvalidOperationException("New base file path or filename is not set.");
+            var merger = new ExcelMerger();
+            merger.MergeFiles(BaseFilePath, TargetFilePaths);
         }
-
-        string fullPath = Path.Combine(model.NewBaseDirectoryPath, model.NewBaseFilename + ".xlsx");
-        ExcelFileCreator.CreateNewExcel(fullPath);
-        model.BaseFilePath = fullPath;
-        return fullPath;
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Merge failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            view.LockControls(false);
+            view.
+        }
     }
 
-    public void RemovePlaceholderIfNeeded()
+    public void RunSort()
     {
-        ExcelFileCreator.RemovePlaceholderSheets(model.BaseFilePath);
+        view.LockControls(false);
+        progressAnimationCts = new CancellationTokenSource();
+
+        try
+        {
+            view.SetProgress(0);
+            var animationTask = AnimateProgressBarAsync(toolStripProgressBar1, 20, 200, progressAnimationCts.Token);
+
+            var sorter = new Excel_Handling.FunctionalTestSorter();
+            await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath));
+
+            toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
+            presenter.NotifySortCompleted();
+
+            progressAnimationCts.Cancel();
+            await animationTask;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Sort failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            progressAnimationCts?.Cancel();
+            view.LockControls(true);
+            view.SetProgress(0);
+        }
     }
 
+    public void RunCreateNewBaseFile()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetBaseFile(string filename)
+    {
+        model.ExistingBaseFilePath = filename;
+        view.UpdateFilename(Path.GetFileName(filename));
+        view.UpdateDirectory(Path.GetDirectoryName(filename));
+    }
 }

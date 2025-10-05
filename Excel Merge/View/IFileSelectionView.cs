@@ -13,15 +13,15 @@ public interface IFileSelectionView
 
     event EventHandler OpenFolderClicked;
 
-    event EventHandler<BaseFileModeSelection> BaseFileModeChanged;// new event for radio button toggle
+    event EventHandler<InputFileMode> InputFileModeChanged;// new event for radio button toggle
 
-    BaseFileModeSelection CurrentBaseFileMode { get; } // new property to let presenter know current mode
+    InputFileMode CurrentBaseFileMode { get; } // new property to let presenter know current mode
 
-    void UpdateBaseFileName(string name);
+    void UpdateFilename(string name);
 
-    void UpdateBaseFileFolderName(string name);
+    void UpdateDirectory(string name);
 
-    void UpdateTargetFileNames(string names);
+    void UpdateTargetFilenames(string names);
 
     void SetMergeButtonEnabled(bool enabled);
 
@@ -29,7 +29,7 @@ public interface IFileSelectionView
 
     void SetOpenFileButtonEnabled(bool enabled);
 
-    void ApplyTaskControlLock(bool disableForTask);
+    void LockControls(bool enable);
 
     void SetProgress(int percent);
 

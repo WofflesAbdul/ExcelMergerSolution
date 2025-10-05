@@ -1,41 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
-public class FileSelectionModel
+
+public class FileSelectionModel : IFileSelectionModel
 {
-    private string baseFilePath;
-    private string newBaseDirectoryPath;
-    private string newBaseFilename;
+    private string existingBaseFilePath;
+    private string directoryPath;
+    private string newFileName;
     private List<string> targetFilePaths = new List<string>();
 
     public event EventHandler<ModelStateChangedEventArgs> ModelStateChanged;
 
-    public string BaseFilePath
+    public string ExistingBaseFilePath
     {
-        get => baseFilePath;
+        get => existingBaseFilePath;
         set
         {
-            baseFilePath = value;
+            existingBaseFilePath = value;
+            NotifyStateChanged();
+
+            DirectoryPath = Path.GetDirectoryName(value);
+        }
+    }
+
+    public string DirectoryPath
+    {
+        get => directoryPath;
+        set
+        {
+            directoryPath = value;
             NotifyStateChanged();
         }
     }
 
-    public string NewBaseDirectoryPath
+    public string NewFileName
     {
-        get => newBaseDirectoryPath;
+        get => newFileName;
         set
         {
-            newBaseDirectoryPath = value;
-            NotifyStateChanged();
-        }
-    }
-
-    public string NewBaseFilename
-    {
-        get => newBaseFilename;
-        set
-        {
-            newBaseFilename = value;
+            newFileName = value;
             NotifyStateChanged();
         }
     }
@@ -54,11 +58,11 @@ public class FileSelectionModel
     {
         ModelStateChanged?.Invoke(this, new ModelStateChangedEventArgs
         {
-            HasDirectoryPath = !string.IsNullOrWhiteSpace(NewBaseDirectoryPath),
-            HasValidBaseFile = !string.IsNullOrWhiteSpace(BaseFilePath),
+            HasDirectoryPath = !string.IsNullOrWhiteSpace(DirectoryPath),
+            HasValidBaseFile = !string.IsNullOrWhiteSpace(ExistingBaseFilePath),
             CanMerge = (TargetFilePaths.Count > 0) &&
-                       (!string.IsNullOrWhiteSpace(BaseFilePath) ||
-                        (!string.IsNullOrWhiteSpace(NewBaseFilename) && !string.IsNullOrWhiteSpace(NewBaseDirectoryPath))),
+                   (!string.IsNullOrWhiteSpace(ExistingBaseFilePath) ||
+                    (!string.IsNullOrWhiteSpace(NewFileName) && !string.IsNullOrWhiteSpace(DirectoryPath))),
         });
     }
 }

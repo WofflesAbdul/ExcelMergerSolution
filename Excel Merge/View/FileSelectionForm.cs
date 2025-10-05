@@ -6,14 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-public partial class Form1 : Form, IFileSelectionView
+public partial class FileSelectionForm : Form, IFileSelectionView
 {
     private const string PlaceholderDuringCreateNewMode = "Enter filename here";
     private readonly FileSelectionPresenter presenter;
+    private readonly FileSelectionModel model;
     private readonly List<Control> controlsToDisable = new List<Control>();
     private readonly List<ToolStripMenuItem> toolStripButtonsToDisable = new List<ToolStripMenuItem>();
-    private Dictionary<Control, bool> controlsStateBackup;
-    private Dictionary<ToolStripMenuItem, bool> toolStripStateBackup;
     private CancellationTokenSource progressAnimationCts;
 
     public event EventHandler MergeClicked;
@@ -26,12 +25,13 @@ public partial class Form1 : Form, IFileSelectionView
 
     public event EventHandler OpenFolderClicked;
 
-    public event EventHandler<BaseFileModeSelection> BaseFileModeChanged;
+    public event EventHandler<InputFileMode> InputFileModeChanged;
 
-    public Form1()
+    public FileSelectionForm()
     {
         InitializeComponent();
-        presenter = new FileSelectionPresenter(this);
+        model = new FileSelectionModel();
+        presenter = new FileSelectionPresenter(model, this);
 
         controlsToDisable.AddRange(new Control[] { button1, button2, button3, button4, });
         toolStripButtonsToDisable.AddRange(new ToolStripMenuItem[] { openFileToolStripMenuItem, openContainingFolderToolStripMenuItem, resetToolStripMenuItem, });
@@ -42,28 +42,28 @@ public partial class Form1 : Form, IFileSelectionView
         ResetClicked += (s, e) => presenter.OnResetClicked();
         presenter.MergeRequested += async (s, e) => await RunMergeAsync();
         presenter.SortRequested += async (s, e) => await RunSortAsync();
-        presenter.ResetRequested += (s, e) => presenter.ResetSelection();
+        presenter.ResetRequested += (s, e) => presenter.OnReset();
         rbUseExistingFile.Checked = true;
     }
 
-    public BaseFileModeSelection CurrentBaseFileMode =>
+    public InputFileMode CurrentBaseFileMode =>
         rbUseExistingFile.Checked
-            ? BaseFileModeSelection.UseExistingFile
+            ? InputFileMode.ExistingFile
             : rbCreateNewFile.Checked
-                ? BaseFileModeSelection.CreateNewFile
+                ? InputFileMode.NewFile
                 : throw new InvalidOperationException();
 
-    public void UpdateBaseFileName(string name)
+    public void UpdateFilename(string name)
     {
         textBox1.Text = name;
     }
 
-    public void UpdateBaseFileFolderName(string name)
+    public void UpdateDirectory(string name)
     {
         label4.Text = name;
     }
 
-    public void UpdateTargetFileNames(string names)
+    public void UpdateTargetFilenames(string names)
     {
         textBox2.Text = names;
     }
@@ -84,46 +84,17 @@ public partial class Form1 : Form, IFileSelectionView
         openContainingFolderToolStripMenuItem.Enabled = enabled;
     }
 
-    public void ApplyTaskControlLock(bool disableForTask)
+    public void LockControls(bool enable)
     {
-        if (!disableForTask)
+        bool lockEnabled = !enable;
+        foreach (var ctrl in controlsToDisable)
         {
-            // Disable controls
-            controlsStateBackup = new Dictionary<Control, bool>();
-            foreach (var ctrl in controlsToDisable)
-            {
-                controlsStateBackup[ctrl] = ctrl.Enabled;
-                ctrl.Enabled = false;
-            }
-
-            toolStripStateBackup = new Dictionary<ToolStripMenuItem, bool>();
-            foreach (var btn in toolStripButtonsToDisable)
-            {
-                toolStripStateBackup[btn] = btn.Enabled;
-                btn.Enabled = false;
-            }
+            ctrl.Enabled = lockEnabled;
         }
-        else
+
+        foreach (var btn in toolStripButtonsToDisable)
         {
-            // Restore from backup
-            if (controlsStateBackup != null)
-            {
-                foreach (var kvp in controlsStateBackup)
-                {
-                    kvp.Key.Enabled = kvp.Value;
-                }
-            }
-
-            if (toolStripStateBackup != null)
-            {
-                foreach (var kvp in toolStripStateBackup)
-                {
-                    kvp.Key.Enabled = kvp.Value;
-                }
-            }
-
-            controlsStateBackup?.Clear();
-            toolStripStateBackup?.Clear();
+            btn.Enabled = lockEnabled;
         }
     }
 
@@ -158,12 +129,12 @@ public partial class Form1 : Form, IFileSelectionView
         label4.Text = string.Empty;
         switch (CurrentBaseFileMode)
         {
-            case BaseFileModeSelection.UseExistingFile:
+            case InputFileMode.ExistingFile:
                 textBox1.ReadOnly = true;
                 button1.Text = "Select File";
                 break;
 
-            case BaseFileModeSelection.CreateNewFile:
+            case InputFileMode.NewFile:
                 textBox1.ReadOnly = false;
                 TextBox1_Leave(textBox1, EventArgs.Empty);
                 button1.Text = "Select Folder";
@@ -181,10 +152,10 @@ public partial class Form1 : Form, IFileSelectionView
     {
         switch (CurrentBaseFileMode)
         {
-            case BaseFileModeSelection.UseExistingFile:
+            case InputFileMode.ExistingFile:
                 presenter.SelectBaseFile();
                 break;
-            case BaseFileModeSelection.CreateNewFile:
+            case InputFileMode.NewFile:
                 presenter.OnNewBaseFileTargetLocationChanged();
                 break;
         }
@@ -206,7 +177,7 @@ public partial class Form1 : Form, IFileSelectionView
     {
         if (rbUseExistingFile.Checked)
         {
-            BaseFileModeChanged?.Invoke(this, BaseFileModeSelection.UseExistingFile);
+            InputFileModeChanged?.Invoke(this, InputFileMode.ExistingFile);
         }
     }
 
@@ -214,13 +185,13 @@ public partial class Form1 : Form, IFileSelectionView
     {
         if (rbCreateNewFile.Checked)
         {
-            BaseFileModeChanged?.Invoke(this, BaseFileModeSelection.CreateNewFile);
+            InputFileModeChanged?.Invoke(this, InputFileMode.NewFile);
         }
     }
 
     private void TextBox1_Enter(object sender, EventArgs e)
     {
-        if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile &&
+        if (CurrentBaseFileMode == InputFileMode.NewFile &&
             textBox1.Text == PlaceholderDuringCreateNewMode)
         {
             textBox1.Text = string.Empty;
@@ -231,99 +202,28 @@ public partial class Form1 : Form, IFileSelectionView
 
     private void TextBox1_Leave(object sender, EventArgs e)
     {
-        if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
+        if (CurrentBaseFileMode == InputFileMode.NewFile)
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text))
             {
                 textBox1.Text = PlaceholderDuringCreateNewMode;
                 textBox1.ForeColor = SystemColors.GrayText;
                 textBox1.Font = new Font(textBox1.Font, FontStyle.Italic);
-                presenter.OnNewBaseFilenameEntered(null);
+                presenter.OnFilenameSet(null);
             }
             else if (textBox1.Text != PlaceholderDuringCreateNewMode)
             {
-                presenter.OnNewBaseFilenameEntered(textBox1.Text.Trim());
+                presenter.OnFilenameSet(textBox1.Text.Trim());
             }
         }
     }
 
     private void TextBox1_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.KeyCode == Keys.Enter && CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
+        if (e.KeyCode == Keys.Enter && CurrentBaseFileMode == InputFileMode.NewFile)
         {
             e.SuppressKeyPress = true;
             this.SelectNextControl(textBox1, true, true, true, true);
-        }
-    }
-
-    private async Task RunMergeAsync()
-    {
-        ApplyTaskControlLock(false);
-        presenter.SetProgress(0);
-
-        if (CurrentBaseFileMode == BaseFileModeSelection.CreateNewFile)
-        {
-            string tempBaseFilePath = presenter.CreateNewBaseFile();
-            rbUseExistingFile.Checked = true;
-            presenter.SelectBaseFile(tempBaseFilePath);
-            ApplyTaskControlLock(false);
-        }
-
-        try
-        {
-            var merger = new Excel_Handling.ExcelMerger();
-            await Task.Run(() =>
-            {
-                merger.MergeFiles(
-                    presenter.BaseFilePath,
-                    presenter.TargetFilePaths,
-                    percent => this.Invoke((Action)(() => SetProgress(percent)))
-                );
-            });
-
-            presenter.RemovePlaceholderIfNeeded();
-            presenter.NotifyMergeCompleted();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Merge failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-            ApplyTaskControlLock(true);
-            presenter.ClearTargetSelection();
-            presenter.SetProgress(0);
-        }
-    }
-
-    private async Task RunSortAsync()
-    {
-        ApplyTaskControlLock(false);
-        progressAnimationCts = new CancellationTokenSource();
-
-        try
-        {
-            toolStripProgressBar1.Value = 0;
-            var animationTask = AnimateProgressBarAsync(toolStripProgressBar1, 20, 200, progressAnimationCts.Token);
-
-            var sorter = new Excel_Handling.FunctionalTestSorter();
-            await Task.Run(() => sorter.SortSheets(presenter.BaseFilePath));
-
-            toolStripProgressBar1.Value = toolStripProgressBar1.Maximum;
-            presenter.NotifySortCompleted();
-
-            progressAnimationCts.Cancel();
-            await animationTask;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Sort failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-        finally
-        {
-            progressAnimationCts?.Cancel();
-            ApplyTaskControlLock(true);
-            toolStripProgressBar1.Value = 0;
         }
     }
 
