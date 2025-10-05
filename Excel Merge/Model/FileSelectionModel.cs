@@ -1,16 +1,64 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class FileSelectionModel
 {
-    // Base file full path
-    public string BaseFilePath { get; set; }
+    private string baseFilePath;
+    private string newBaseDirectoryPath;
+    private string newBaseFilename;
+    private List<string> targetFilePaths = new List<string>();
 
-    // Outgoing Base file folder path
-    public string NewBaseDirectoryPath { get; set; }
+    public event EventHandler<ModelStateChangedEventArgs> ModelStateChanged;
 
-    // Outgoing Base file folder path
-    public string NewBaseFilename { get; set; }
+    public string BaseFilePath
+    {
+        get => baseFilePath;
+        set
+        {
+            baseFilePath = value;
+            NotifyStateChanged();
+        }
+    }
 
-    // List of target file full paths
-    public List<string> TargetFilePaths { get; } = new List<string>();
+    public string NewBaseDirectoryPath
+    {
+        get => newBaseDirectoryPath;
+        set
+        {
+            newBaseDirectoryPath = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public string NewBaseFilename
+    {
+        get => newBaseFilename;
+        set
+        {
+            newBaseFilename = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public List<string> TargetFilePaths
+    {
+        get => targetFilePaths;
+        set
+        {
+            targetFilePaths = value ?? new List<string>();
+            NotifyStateChanged();
+        }
+    }
+
+    private void NotifyStateChanged()
+    {
+        ModelStateChanged?.Invoke(this, new ModelStateChangedEventArgs
+        {
+            HasDirectoryPath = !string.IsNullOrWhiteSpace(NewBaseDirectoryPath),
+            HasValidBaseFile = !string.IsNullOrWhiteSpace(BaseFilePath),
+            CanMerge = (TargetFilePaths.Count > 0) &&
+                       (!string.IsNullOrWhiteSpace(BaseFilePath) ||
+                        (!string.IsNullOrWhiteSpace(NewBaseFilename) && !string.IsNullOrWhiteSpace(NewBaseDirectoryPath))),
+        });
+    }
 }
