@@ -118,6 +118,26 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         timer.Start();
     }
 
+    public async Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token)
+    {
+        toolStripProgressBar1.Value = 0;
+        int maxValue = (int)(toolStripProgressBar1.Maximum * 0.9);
+        int stepValue = maxValue / steps;
+
+        for (int i = 1; i <= steps; i++)
+        {
+            if (token.IsCancellationRequested) break;
+            await Task.Delay(delayMs, token);
+            if (token.IsCancellationRequested) break;
+            toolStripProgressBar1.Value = Math.Min(stepValue * i, maxValue);
+        }
+    }
+
+    public void NewFileCreated()
+    {
+        rbUseExistingFile.Checked = true;
+    }
+
     private void Form1_Load(object sender, EventArgs e)
     {
         toolStripLabel2.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -228,21 +248,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
                 textBox1.ForeColor = SystemColors.GrayText;
                 textBox1.Font = new Font(textBox1.Font, FontStyle.Italic);
             }
-        }
-    }
-
-    public async Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token)
-    {
-        toolStripProgressBar1.Value = 0;
-        int maxValue = (int)(toolStripProgressBar1.Maximum * 0.9);
-        int stepValue = maxValue / steps;
-
-        for (int i = 1; i <= steps; i++)
-        {
-            if (token.IsCancellationRequested) break;
-            await Task.Delay(delayMs, token);
-            if (token.IsCancellationRequested) break;
-            toolStripProgressBar1.Value = Math.Min(stepValue * i, maxValue);
         }
     }
 }

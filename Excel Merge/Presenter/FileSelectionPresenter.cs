@@ -229,6 +229,8 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         {
             string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
+            view.NewFileCreated();
+
             // Reset new file info
             model.NewFileName = null;
             model.DirectoryPath = null;

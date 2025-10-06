@@ -35,5 +35,7 @@ public interface IFileSelectionView
 
     void SetCompletionStatus(string message, bool isError = false);
 
+    void NewFileCreated();
+
     Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token);
 }
