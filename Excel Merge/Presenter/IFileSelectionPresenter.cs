@@ -23,13 +23,11 @@ public interface IFileSelectionPresenter
 
     void OnModelStateChanged(object sender, ModelStateChangedEventArgs e);
 
-    Task RunMergeAsync(object sender, EventArgs e);
+    Task RunOperationAsync(OperationRequested op, Func<Task> action);
 
-    Task RunSortAsync(object sender, EventArgs e);
+    Task MergeAction();
 
-    Task RunCreateNewBaseFileAsync(object sender, EventArgs e);
+    Task SortAction();
 
-    bool CheckRunning();
-
-
+    Task CreateNewFileAction();
 }

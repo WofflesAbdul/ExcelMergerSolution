@@ -9,7 +9,7 @@ using System.Windows.Forms;
 public partial class FileSelectionForm : Form, IFileSelectionView
 {
     private const string PlaceholderText = "Enter filename here";
-    private readonly FileSelectionPresenter presenter;
+    private readonly IFileSelectionPresenter presenter;
     private readonly List<Control> controlsToDisable = new List<Control>();
     private readonly List<ToolStripDropDownButton> toolStripButtonsToDisable = new List<ToolStripDropDownButton>();
     private CancellationTokenSource progressAnimationCts;
@@ -24,12 +24,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
         rbUseExistingFile.Checked = true;
     }
-
-    public event EventHandler MergeRequested;
-
-    public event EventHandler SortRequested;
-
-    public event EventHandler CreateNewFileRequested;
 
     public event EventHandler ResetRequested;
 
@@ -90,27 +84,38 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public void SetProgress(int percent)
     {
-        if (percent < toolStripProgressBar1.Minimum)
+        if (this.InvokeRequired) // 'this' = your Form
         {
-            percent = toolStripProgressBar1.Minimum;
+            this.Invoke(new Action(() => SetProgress(percent)));
+            return;
         }
 
-        if (percent > toolStripProgressBar1.Maximum)
-        {
-            percent = toolStripProgressBar1.Maximum;
-        }
-
+        // Clamp the value between min/max
+        percent = Math.Max(toolStripProgressBar1.Minimum, Math.Min(toolStripProgressBar1.Maximum, percent));
         toolStripProgressBar1.Value = percent;
     }
 
-    public DialogResult ShowPrompt(string message, string title)
+    public void SetOngoingStatus(string message)
     {
-        return MessageBox.Show(
-            message,
-            title,
-            MessageBoxButtons.YesNo,
-            MessageBoxIcon.Question
-        );
+        toolStripLabel4.Text = message;
+    }
+
+    public void SetCompletionStatus(string message, bool isError = false)
+    {
+        toolStripLabel5.Text = message;
+        toolStripLabel5.ForeColor = isError ? Color.Red : Color.Green;
+
+        // Create a self-contained timer
+        var timer = new System.Windows.Forms.Timer();
+        timer.Interval = 5000; // 5 seconds
+        timer.Tick += (s, e) =>
+        {
+            toolStripLabel5.Text = string.Empty;
+            toolStripLabel5.ForeColor = Color.Black;
+            timer.Stop();
+            timer.Dispose(); // Dispose itself
+        };
+        timer.Start();
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -137,19 +142,19 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         presenter.SelectTargetFiles();
     }
 
-    private void Button3_Click(object sender, EventArgs e)
+    private async void Button3_Click(object sender, EventArgs e)
     {
         if (presenter.InputFileMode == InputFileMode.NewFile)
         {
-            CreateNewFileRequested?.Invoke(sender, e);
+            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, presenter.CreateNewFileAction);
         }
 
-        MergeRequested?.Invoke(sender, e);
+        await presenter.RunOperationAsync(OperationRequested.Merge, presenter.MergeAction);
     }
 
-    private void Button4_Click(object sender, EventArgs e)
+    private async void Button4_Click(object sender, EventArgs e)
     {
-        SortRequested?.Invoke(sender, e);
+        await presenter.RunOperationAsync(OperationRequested.Sort, presenter.SortAction);
     }
 
     private void ButtonReset_Click(object sender, EventArgs e)
@@ -226,10 +231,10 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         }
     }
 
-    private async Task AnimateProgressBarAsync(ToolStripProgressBar progressBar, int steps, int delayMs, CancellationToken token)
+    public async Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token)
     {
-        progressBar.Value = 0;
-        int maxValue = (int)(progressBar.Maximum * 0.9);
+        toolStripProgressBar1.Value = 0;
+        int maxValue = (int)(toolStripProgressBar1.Maximum * 0.9);
         int stepValue = maxValue / steps;
 
         for (int i = 1; i <= steps; i++)
@@ -237,7 +242,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             if (token.IsCancellationRequested) break;
             await Task.Delay(delayMs, token);
             if (token.IsCancellationRequested) break;
-            progressBar.Value = Math.Min(stepValue * i, maxValue);
+            toolStripProgressBar1.Value = Math.Min(stepValue * i, maxValue);
         }
     }
 }

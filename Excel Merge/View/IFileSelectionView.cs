@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Threading;
+using System.Threading.Tasks;
 
 public interface IFileSelectionView
 {
-    event EventHandler MergeRequested;
-
-    event EventHandler SortRequested;
-
-    event EventHandler CreateNewFileRequested;
-
     event EventHandler ResetRequested;
 
     event EventHandler OpenFileClicked;
@@ -37,5 +31,9 @@ public interface IFileSelectionView
 
     void SetProgress(int percent);
 
-    DialogResult ShowPrompt(string message, string title);
+    void SetOngoingStatus(string message);
+
+    void SetCompletionStatus(string message, bool isError = false);
+
+    Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token);
 }

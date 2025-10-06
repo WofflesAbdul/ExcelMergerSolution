@@ -46,7 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\OperationType.cs" />
+    <Compile Include="Common\Operation\OperationInfo.cs" />
+    <Compile Include="Common\Operation\OperationRegistry.cs" />
+    <Compile Include="Common\Operation\OperationRequested.cs" />
+    <Compile Include="Common\Operation\OperationType.cs" />
     <Compile Include="Model\FileSelectionModel.cs" />
     <Compile Include="Common\ModelStateChangedEventArgs.cs" />
     <Compile Include="Model\IFileSelectionModel.cs" />
