@@ -59,6 +59,10 @@
             this.toolStripButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripLabel4 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripLabel5 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -90,7 +94,11 @@
             this.toolStripSeparator1,
             this.toolStripProgressBar1,
             this.toolStripLabel3,
-            this.toolStripSeparator2});
+            this.toolStripSeparator2,
+            this.toolStripLabel4,
+            this.toolStripSeparator5,
+            this.toolStripLabel5,
+            this.toolStripSeparator6});
             this.toolStrip2.Location = new System.Drawing.Point(0, 343);
             this.toolStrip2.Name = "toolStrip2";
             this.toolStrip2.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -467,7 +475,33 @@
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
             // 
-            // Form1
+            // toolStripLabel4
+            // 
+            this.toolStripLabel4.AutoSize = false;
+            this.toolStripLabel4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripLabel4.Name = "toolStripLabel4";
+            this.toolStripLabel4.Size = new System.Drawing.Size(200, 24);
+            this.toolStripLabel4.Text = "Status: Standby";
+            this.toolStripLabel4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 27);
+            // 
+            // toolStripLabel5
+            // 
+            this.toolStripLabel5.AutoSize = false;
+            this.toolStripLabel5.Name = "toolStripLabel5";
+            this.toolStripLabel5.Size = new System.Drawing.Size(200, 24);
+            this.toolStripLabel5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
+            // 
+            // FileSelectionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -479,7 +513,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Form1";
+            this.Name = "FileSelectionForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Excel Merge";
@@ -537,4 +571,8 @@
     private System.Windows.Forms.Panel panel5;
     private System.Windows.Forms.RadioButton rbUseExistingFile;
     private System.Windows.Forms.RadioButton rbCreateNewFile;
+    private System.Windows.Forms.ToolStripLabel toolStripLabel4;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+    private System.Windows.Forms.ToolStripLabel toolStripLabel5;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
 }

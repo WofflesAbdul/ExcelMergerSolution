@@ -1,5 +1,6 @@
-﻿public enum TaskType
+﻿public enum OperationType
 {
+    None,
     Merge,
     Sort,
     CreateNewFile,

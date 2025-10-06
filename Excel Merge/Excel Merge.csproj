@@ -46,8 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\TaskCompletedEventArgs.cs" />
-    <Compile Include="Common\TaskType.cs" />
+    <Compile Include="Common\OperationType.cs" />
     <Compile Include="Model\FileSelectionModel.cs" />
     <Compile Include="Common\ModelStateChangedEventArgs.cs" />
     <Compile Include="Model\IFileSelectionModel.cs" />

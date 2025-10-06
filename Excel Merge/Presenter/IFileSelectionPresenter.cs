@@ -1,41 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public interface IFileSelectionPresenter
 {
-    event EventHandler<TaskCompletedEventArgs> TaskCompleted;
+    InputFileMode InputFileMode { get; }
 
-    string BaseFilePath { get; }
+    void SelectBaseFile();
 
-    string NewBaseDirectoryPath { get; }
-
-    string NewBaseFilename { get; }
-
-    IReadOnlyList<string> TargetFilePaths { get; }
-
-    void SelectBaseFile(string newlyCreatedBaseFile = null);
+    void SelectDirectoryPath();
 
     void SelectTargetFiles();
 
     void OnFilenameSet(string filename);
 
-    void OnDirectorySet(string directoryPath);
+    void OnReset(object sender, EventArgs e);
 
-    void OnReset();
+    void OnInputFileModeChanged(object sender, InputFileMode mode);
 
-    void OnInputFileModeChanged();
+    void OnOpenFileClicked(object sender, EventArgs e);
 
-    void OnOpenFileClicked();
-
-    void OnOpenFolderClicked();
+    void OnOpenFolderClicked(object sender, EventArgs e);
 
     void OnModelStateChanged(object sender, ModelStateChangedEventArgs e);
 
-    void RunMerge();
+    Task RunMergeAsync(object sender, EventArgs e);
 
-    void RunSort();
+    Task RunSortAsync(object sender, EventArgs e);
 
-    void RunCreateNewBaseFile();
+    Task RunCreateNewBaseFileAsync(object sender, EventArgs e);
 
-    void SetBaseFile(string filename);
+    bool CheckRunning();
+
+
 }

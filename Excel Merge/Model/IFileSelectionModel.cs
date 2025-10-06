@@ -12,4 +12,8 @@ public interface IFileSelectionModel
     string NewFileName { get; set; }
 
     List<string> TargetFilePaths { get; }
+
+    void AddTargetFiles(string[] targetFilesPath);
+
+    void ClearTargetFiles();
 }

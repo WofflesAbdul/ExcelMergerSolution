@@ -1,27 +1,29 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 public interface IFileSelectionView
 {
-    event EventHandler MergeClicked;
+    event EventHandler MergeRequested;
 
-    event EventHandler SortClicked;
+    event EventHandler SortRequested;
 
-    event EventHandler ResetClicked;
+    event EventHandler CreateNewFileRequested;
+
+    event EventHandler ResetRequested;
 
     event EventHandler OpenFileClicked;
 
     event EventHandler OpenFolderClicked;
 
-    event EventHandler<InputFileMode> InputFileModeChanged;// new event for radio button toggle
+    event EventHandler<InputFileMode> InputFileModeChanged; // new event for radio button toggle
 
-    InputFileMode CurrentBaseFileMode { get; } // new property to let presenter know current mode
+    void DisplayFileName(string fileName);
 
-    void UpdateFilename(string name);
+    void DisplayDirectoryPath(string directoryPath);
 
-    void UpdateDirectory(string name);
-
-    void UpdateTargetFilenames(string names);
+    void DisplayTargetFilePaths(IEnumerable<string> targetFileNames);
 
     void SetMergeButtonEnabled(bool enabled);
 
@@ -29,11 +31,11 @@ public interface IFileSelectionView
 
     void SetOpenFileButtonEnabled(bool enabled);
 
+    void SetOpenFolderButtonEnabled(bool enabled);
+
     void LockControls(bool enable);
 
     void SetProgress(int percent);
-
-    void UpdateUIForBaseFileSelectionMode();
 
     DialogResult ShowPrompt(string message, string title);
 }
