@@ -1,27 +1,23 @@
 ﻿using System;
-using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 public interface IFileSelectionView
 {
-    event EventHandler MergeClicked;
-
-    event EventHandler SortClicked;
-
-    event EventHandler ResetClicked;
+    event EventHandler ResetRequested;
 
     event EventHandler OpenFileClicked;
 
     event EventHandler OpenFolderClicked;
 
-    event EventHandler<BaseFileModeSelection> BaseFileModeChanged;// new event for radio button toggle
+    event EventHandler<InputFileMode> InputFileModeChanged; // new event for radio button toggle
 
-    BaseFileModeSelection CurrentBaseFileMode { get; } // new property to let presenter know current mode
+    void DisplayFileName(string fileName);
 
-    void UpdateBaseFileName(string name);
+    void DisplayDirectoryPath(string directoryPath);
 
-    void UpdateBaseFileFolderName(string name);
-
-    void UpdateTargetFileNames(string names);
+    void DisplayTargetFilePaths(IEnumerable<string> targetFileNames);
 
     void SetMergeButtonEnabled(bool enabled);
 
@@ -29,11 +25,17 @@ public interface IFileSelectionView
 
     void SetOpenFileButtonEnabled(bool enabled);
 
-    void ApplyTaskControlLock(bool disableForTask);
+    void SetOpenFolderButtonEnabled(bool enabled);
+
+    void LockControls(bool enable);
 
     void SetProgress(int percent);
 
-    void UpdateUIForBaseFileSelectionMode();
+    void SetOngoingStatus(string message);
 
-    DialogResult ShowPrompt(string message, string title);
+    void SetCompletionStatus(string message, bool isError = false);
+
+    void NewFileCreated();
+
+    Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token);
 }

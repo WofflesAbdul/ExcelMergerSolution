@@ -11,20 +11,28 @@ Public NotInheritable Class ExcelFileCreator
     Private Shared ReadOnly PlaceholderNames As String() = {"Placeholder", "Sheet1", "Sheet2", "Sheet3"}
 
     ''' <summary>
-    ''' Creates a new Excel workbook at the specified full path.
-    ''' Optionally adds a "Placeholder" sheet to mark blank workbooks.
+    ''' Creates a new Excel workbook in the specified directory with the specified filename.
+    ''' Returns the full path of the created workbook.
     ''' </summary>
-    ''' <param name="fullPath">Full file path including filename.xlsx</param>
-    ''' <returns>True if file was successfully created and exists, otherwise False</returns>
-    Public Shared Function CreateNewExcel(fullPath As String) As Boolean
-        If String.IsNullOrWhiteSpace(fullPath) Then
-            Throw New ArgumentException("File path cannot be null or empty.", NameOf(fullPath))
+    ''' <param name="directoryPath">Directory to create the workbook in.</param>
+    ''' <param name="fileName">Filename including extension, e.g., "MyWorkbook.xlsx"</param>
+    ''' <returns>Full file path of the created workbook.</returns>
+    ''' <exception cref="ArgumentException">If directoryPath or fileName is null/empty.</exception>
+    ''' <exception cref="ApplicationException">If workbook creation fails.</exception>
+    Public Shared Function CreateNewExcel(directoryPath As String, fileName As String) As String
+        If String.IsNullOrWhiteSpace(directoryPath) Then Throw New ArgumentException("Directory path cannot be empty.", NameOf(directoryPath))
+        If String.IsNullOrWhiteSpace(fileName) Then Throw New ArgumentException("Filename cannot be empty.", NameOf(fileName))
+
+        ' Ensure filename has .xlsx extension
+        If Path.GetExtension(fileName).ToLower() <> ".xlsx" Then
+            fileName &= ".xlsx"
         End If
 
+        Dim fullPath As String = Path.Combine(directoryPath, fileName)
+
         ' Ensure folder exists
-        Dim folder As String = Path.GetDirectoryName(fullPath)
-        If Not Directory.Exists(folder) Then
-            Directory.CreateDirectory(folder)
+        If Not Directory.Exists(directoryPath) Then
+            Directory.CreateDirectory(directoryPath)
         End If
 
         Dim excelApp As Excel.Application = Nothing
@@ -34,16 +42,16 @@ Public NotInheritable Class ExcelFileCreator
             excelApp = New Excel.Application()
             excelApp.DisplayAlerts = False
 
-            ' Create new workbook
             wb = excelApp.Workbooks.Add()
             wb.SaveAs(fullPath)
             wb.Close(SaveChanges:=True)
 
             ' Verify file exists
-            Return File.Exists(fullPath)
+            If Not File.Exists(fullPath) Then
+                Throw New ApplicationException($"Failed to create Excel file at {fullPath}")
+            End If
 
-        Catch
-            Return False
+            Return fullPath
 
         Finally
             If wb IsNot Nothing Then MarshalReleaseComObject(wb)

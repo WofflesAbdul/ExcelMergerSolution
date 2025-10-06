@@ -46,20 +46,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Operation\OperationInfo.cs" />
+    <Compile Include="Common\Operation\OperationRegistry.cs" />
+    <Compile Include="Common\Operation\OperationRequested.cs" />
+    <Compile Include="Common\Operation\OperationType.cs" />
     <Compile Include="Model\FileSelectionModel.cs" />
+    <Compile Include="Common\ModelStateChangedEventArgs.cs" />
+    <Compile Include="Model\IFileSelectionModel.cs" />
     <Compile Include="Presenter\FileSelectionPresenter.cs" />
-    <Compile Include="Presenter\BaseFileMode.cs" />
-    <Compile Include="View\Form1.cs">
+    <Compile Include="Common\InputFileMode.cs" />
+    <Compile Include="Presenter\IFileSelectionPresenter.cs" />
+    <Compile Include="View\FileSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="View\Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="View\FileSelectionForm.Designer.cs">
+      <DependentUpon>FileSelectionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="View\IFileSelectionView.cs" />
-    <EmbeddedResource Include="View\Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="View\FileSelectionForm.resx">
+      <DependentUpon>FileSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
