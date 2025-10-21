@@ -1,0 +1,33 @@
+﻿using System;
+using System.Threading.Tasks;
+
+public interface IFileSelectionPresenter
+{
+    InputFileMode InputFileMode { get; }
+
+    void SelectBaseFile();
+
+    void SelectDirectoryPath();
+
+    void SelectTargetFiles();
+
+    void OnFilenameSet(string filename);
+
+    void OnReset(object sender, EventArgs e);
+
+    void OnInputFileModeChanged(object sender, InputFileMode mode);
+
+    void OnOpenFileClicked(object sender, EventArgs e);
+
+    void OnOpenFolderClicked(object sender, EventArgs e);
+
+    void OnModelStateChanged(object sender, ModelStateChangedEventArgs e);
+
+    Task RunOperationAsync(OperationRequested op, Func<Task> action);
+
+    Task MergeAction();
+
+    Task SortAction();
+
+    Task CreateNewFileAction();
+}
