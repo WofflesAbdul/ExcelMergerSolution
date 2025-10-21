@@ -229,7 +229,15 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         {
             string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
-            view.NewFileCreated();
+            // Marshal UI updates to the UI thread safely
+            if (view is Control c)
+            {
+                c.Invoke(new Action(() => view.NewFileCreated()));
+            }
+            else
+            {
+                view.NewFileCreated();
+            }
 
             // Reset new file info
             model.NewFileName = null;
