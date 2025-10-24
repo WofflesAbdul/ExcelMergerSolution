@@ -129,15 +129,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     public void OnModelStateChanged(object sender, ModelStateChangedEventArgs e)
     {
-        // Ensure UI updates happen on the UI thread
-        if (view is Control c && c.InvokeRequired)
-        {
-            c.Invoke(new Action(() => UpdateView(e)));
-        }
-        else
-        {
-            UpdateView(e);
-        }
+        (view as Control)?.SafeInvoke(() => UpdateView(e));
     }
 
     public async Task RunOperationAsync(OperationRequested op, Func<Task> action)
@@ -230,14 +222,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
             // Marshal UI updates to the UI thread safely
-            if (view is Control c)
-            {
-                c.Invoke(new Action(() => view.NewFileCreated()));
-            }
-            else
-            {
-                view.NewFileCreated();
-            }
+            (view as Control)?.SafeInvoke(() => view.NewFileCreated());
 
             // Reset new file info
             model.NewFileName = null;

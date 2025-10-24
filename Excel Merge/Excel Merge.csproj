@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\ControlExtensions.cs" />
     <Compile Include="Common\Operation\OperationInfo.cs" />
     <Compile Include="Common\Operation\OperationRegistry.cs" />
     <Compile Include="Common\Operation\OperationRequested.cs" />

@@ -84,15 +84,12 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public void SetProgress(int percent)
     {
-        if (this.InvokeRequired) // 'this' = your Form
+        this.SafeInvoke(() =>
         {
-            this.Invoke(new Action(() => SetProgress(percent)));
-            return;
-        }
-
-        // Clamp the value between min/max
-        percent = Math.Max(toolStripProgressBar1.Minimum, Math.Min(toolStripProgressBar1.Maximum, percent));
-        toolStripProgressBar1.Value = percent;
+            // Clamp the value between min/max
+            percent = Math.Max(toolStripProgressBar1.Minimum, Math.Min(toolStripProgressBar1.Maximum, percent));
+            toolStripProgressBar1.Value = percent;
+        });
     }
 
     public void SetOngoingStatus(string message)
