@@ -15,6 +15,13 @@ Public Module TemperatureSequence
             Return Integer.MaxValue
         End If
 
+        Dim normalized = suffix.ToLowerInvariant()
+
+        ' >>> NEW: Prioritize "Ambient" before numeric temps <<<
+        If normalized.Contains("ambient") Then
+            Return -1000 ' Ensures ambient sorts first
+        End If
+
         ' Match temperature patterns like "25C", "30C", "-20C"
         Dim tempMatch As Match = Regex.Match(suffix, "(-?\d+)\s*C", RegexOptions.IgnoreCase)
         If tempMatch.Success Then

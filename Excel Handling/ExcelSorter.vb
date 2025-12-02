@@ -31,9 +31,13 @@ Public Class FunctionalTestSorter
                 ' Determine indices
                 Dim baseIndex As Integer = FunctionalTestSequence.TestNames.FindIndex(Function(b) fullName.IndexOf(b, StringComparison.OrdinalIgnoreCase) >= 0)
                 If baseIndex = -1 Then baseIndex = Integer.MaxValue
+
                 Dim voltageOutputIndex As Integer = VoltageOutputSequence.GetVoltageOutputIndex(suffix)
                 Dim vpsuIndex As Integer = VpsuSequence.GetVpsuIndex(suffix)
                 Dim tempIndex As Integer = TemperatureSequence.GetTemperatureIndex(suffix)
+
+                ' Header priority
+                Dim headerPriority As Integer = HeaderSequence.GetHeaderPriority(fullName)
 
                 sheetInfoList.Add(New SheetInfo With {
                     .Worksheet = ws,
@@ -41,16 +45,18 @@ Public Class FunctionalTestSorter
                     .baseIndex = baseIndex,
                     .voltageOutputIndex = voltageOutputIndex,
                     .vpsuIndex = vpsuIndex,
-                    .tempIndex = tempIndex
+                    .tempIndex = tempIndex,
+                    .headerPriority = headerPriority
                 })
             Next
 
-            ' Sort by BaseName → VoltageOutput → Vpsu → Temperature
+            ' Sort by Header → Temperature → BaseName → VoltageOutput → Vpsu
             Dim sortedSheets = sheetInfoList _
-                .OrderBy(Function(s) s.baseIndex) _
+                .OrderBy(Function(s) s.headerPriority) _
+                .ThenBy(Function(s) s.tempIndex) _
+                .ThenBy(Function(s) s.baseIndex) _
                 .ThenBy(Function(s) s.voltageOutputIndex) _
                 .ThenBy(Function(s) s.vpsuIndex) _
-                .ThenBy(Function(s) s.tempIndex) _
                 .ToList()
 
             ' Move sheets safely

@@ -7,6 +7,5 @@ Public Class SheetInfo
     Public Property voltageOutputIndex As Integer
     Public Property vpsuIndex As Integer
     Public Property tempIndex As Integer
+    Public Property headerPriority As Integer
 End Class
-
-

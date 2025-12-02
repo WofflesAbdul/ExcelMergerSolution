@@ -67,6 +67,7 @@
     <Compile Include="ExcelFileCreator.vb" />
     <Compile Include="ExcelMerger.vb" />
     <Compile Include="ExcelSorter.vb" />
+    <Compile Include="Module\HeaderSequence.vb" />
     <Compile Include="Module\TemperatureSequence.vb" />
     <Compile Include="Module\VoltageOutputSequence.vb" />
     <Compile Include="Module\VpsuSequence.vb" />
