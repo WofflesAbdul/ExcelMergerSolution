@@ -4,7 +4,7 @@ Public Class ExcelFileFromTemplateCreator
 
     ' Template path relative to application startup directory
     Private Shared ReadOnly TemplateRelativePath As String =
-        IO.Path.Combine("Resources", "Templates", "BaseTemplate.xlt")
+        IO.Path.Combine("Resource", "Template", "DvtReportHeaderTemplate.xltx")
 
     Public Shared Function CreateFromTemplate(
         directoryPath As String,
