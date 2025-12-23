@@ -64,6 +64,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelFileFromTemplateCreator.vb" />
     <Compile Include="ExcelFileCreator.vb" />
     <Compile Include="ExcelMerger.vb" />
     <Compile Include="ExcelSorter.vb" />
@@ -107,6 +108,9 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <Content Include="Resource\Template\DvtReportHeaderTemplate.xltx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Office.Interop.Excel">
