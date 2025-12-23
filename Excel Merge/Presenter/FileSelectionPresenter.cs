@@ -25,12 +25,12 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         // GUI triggers → presenter
         view.OpenFileClicked += OnOpenFileClicked;
         view.OpenFolderClicked += OnOpenFolderClicked;
-        view.InputFileModeChanged += OnInputFileModeChanged;
+        view.TargetFileModeChanged += OnTargetFileModeChanged;
 
         view.ResetRequested += OnReset;
     }
 
-    public InputFileMode InputFileMode { get; private set; }
+    public TargetFileMode TargetFileMode { get; private set; }
 
     public void SelectBaseFile()
     {
@@ -87,12 +87,12 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         model.TargetFilePaths.Clear();
     }
 
-    public void OnInputFileModeChanged(object sender, InputFileMode mode)
+    public void OnTargetFileModeChanged(object sender, TargetFileMode mode)
     {
         model.ExistingBaseFilePath = null;
         model.NewFileName = null;
         model.DirectoryPath = null;
-        InputFileMode = mode;
+        TargetFileMode = mode;
     }
 
     public void OnOpenFileClicked(object sender, EventArgs e)
@@ -233,7 +233,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     private void UpdateView(ModelStateChangedEventArgs e)
     {
-        view.DisplayFileName(InputFileMode == InputFileMode.ExistingFile ? Path.GetFileName(e.ExistingBaseFilePath) : e.NewFileName);
+        view.DisplayFileName(TargetFileMode == TargetFileMode.ExistingFile ? Path.GetFileName(e.ExistingBaseFilePath) : e.NewFileName);
         view.DisplayDirectoryPath(e.DirectoryPath);
         view.DisplayTargetFilePaths(e.TargetFilePaths.Select(p => Path.GetFileName(p)));
 

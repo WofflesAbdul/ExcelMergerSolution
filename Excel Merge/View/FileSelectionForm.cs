@@ -31,7 +31,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public event EventHandler OpenFolderClicked;
 
-    public event EventHandler<InputFileMode> InputFileModeChanged;
+    public event EventHandler<TargetFileMode> TargetFileModeChanged;
 
     public void DisplayFileName(string fileName)
     {
@@ -143,12 +143,12 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void Button1_Click(object sender, EventArgs e)
     {
-        switch (presenter.InputFileMode)
+        switch (presenter.TargetFileMode)
         {
-            case InputFileMode.ExistingFile:
+            case TargetFileMode.ExistingFile:
                 presenter.SelectBaseFile();
                 break;
-            case InputFileMode.NewFile:
+            case TargetFileMode.NewFile:
                 presenter.SelectDirectoryPath();
                 break;
         }
@@ -161,7 +161,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private async void Button3_Click(object sender, EventArgs e)
     {
-        if (presenter.InputFileMode == InputFileMode.NewFile)
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
             await presenter.RunOperationAsync(OperationRequested.CreateNewFile, presenter.CreateNewFileAction);
         }
@@ -193,7 +193,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     {
         if (rbUseExistingFile.Checked)
         {
-            InputFileModeChanged?.Invoke(sender, InputFileMode.ExistingFile);
+            TargetFileModeChanged?.Invoke(sender, TargetFileMode.ExistingFile);
 
             textBox1.ReadOnly = true;
             textBox1.ForeColor = SystemColors.WindowText;
@@ -204,9 +204,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void RbCreateNewFile_CheckedChanged(object sender, EventArgs e)
     {
-        if (rbCreateNewFile.Checked)
-        {
-            InputFileModeChanged?.Invoke(sender, InputFileMode.NewFile);
+            TargetFileModeChanged?.Invoke(sender, TargetFileMode.NewFile);
 
             textBox1.ReadOnly = false;
             TextBox1_Leave(textBox1, EventArgs.Empty);
@@ -216,7 +214,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void TextBox1_Enter(object sender, EventArgs e)
     {
-        if (presenter.InputFileMode == InputFileMode.NewFile)
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
             textBox1.Text = string.Empty;
             textBox1.ForeColor = SystemColors.WindowText;
@@ -226,7 +224,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void TextBox1_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.KeyCode == Keys.Enter && presenter.InputFileMode == InputFileMode.NewFile)
+        if (e.KeyCode == Keys.Enter && presenter.TargetFileMode == TargetFileMode.NewFile)
         {
             e.SuppressKeyPress = true;
             this.SelectNextControl(textBox1, true, true, true, true);
@@ -235,7 +233,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void TextBox1_Leave(object sender, EventArgs e)
     {
-        if (presenter.InputFileMode == InputFileMode.NewFile)
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
             presenter.OnFilenameSet(textBox1.Text.Trim());
 

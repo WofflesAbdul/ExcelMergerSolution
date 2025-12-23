@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 public interface IFileSelectionPresenter
 {
-    InputFileMode InputFileMode { get; }
+    TargetFileMode TargetFileMode { get; }
 
     void SelectBaseFile();
 
@@ -15,7 +15,7 @@ public interface IFileSelectionPresenter
 
     void OnReset(object sender, EventArgs e);
 
-    void OnInputFileModeChanged(object sender, InputFileMode mode);
+    void OnTargetFileModeChanged(object sender, TargetFileMode mode);
 
     void OnOpenFileClicked(object sender, EventArgs e);
 
@@ -29,5 +29,5 @@ public interface IFileSelectionPresenter
 
     Task SortAction();
 
-    Task CreateNewFileAction();
+    Task CreateNewFileAction(bool useTemplate);
 }
