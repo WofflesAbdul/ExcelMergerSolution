@@ -64,10 +64,13 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExcelFileFromTemplateCreator.vb" />
-    <Compile Include="ExcelFileCreator.vb" />
-    <Compile Include="ExcelMerger.vb" />
-    <Compile Include="ExcelSorter.vb" />
+    <Compile Include="Data\Models\ResolvedTestMetadata.vb" />
+    <Compile Include="Data\Processor\TestMetadataProcessor.vb" />
+    <Compile Include="Data\Models\TestReportSheetInfo.vb" />
+    <Compile Include="Data\Models\TitleSheetInfo.vb" />
+    <Compile Include="Updaters\TitleSheetUpdater.vb" />
+    <Compile Include="Data\Models\WorkbookNamedData.vb" />
+    <Compile Include="Data\Processor\WorkbookNamedRangeCollector.vb" />
     <Compile Include="Creators\ExcelFileFromTemplateCreator.vb" />
     <Compile Include="Creators\ExcelFileCreator.vb" />
     <Compile Include="Core\ExcelMerger.vb" />
