@@ -215,11 +215,19 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         progressAnimationCts.Cancel();
     }
 
-    public Task CreateNewFileAction()
+    public Task CreateNewFileAction(bool useTemplate)
     {
-        return Task.Run(() =>
+        return Task.Run((Action)(() =>
         {
-            string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
+            string createdFilePath;
+            if (useTemplate)
+            {
+                createdFilePath = ExcelFileFromTemplateCreator.CreateFromTemplate(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
+            }
+            else
+            {
+                createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
+            }
 
             // Marshal UI updates to the UI thread safely
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
@@ -228,7 +236,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             model.NewFileName = null;
             model.DirectoryPath = null;
             model.ExistingBaseFilePath = createdFilePath;
-        });
+        }));
     }
 
     private void UpdateView(ModelStateChangedEventArgs e)
