@@ -1,6 +1,6 @@
 ﻿Imports Microsoft.Office.Interop
 
-Public Class SheetInfo
+Public Class SheetNameParsingInfo
     Public Property Worksheet As Excel.Worksheet
     Public Property OriginalName As String
     Public Property baseIndex As Integer
