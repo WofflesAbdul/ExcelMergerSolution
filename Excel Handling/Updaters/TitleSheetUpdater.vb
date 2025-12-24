@@ -28,6 +28,18 @@ Public Class TitleSheetUpdater
             'WriteNamed(titleSheet, "Description", values.DevelopmentPhase)
             'WriteNamed(titleSheet, "Tester", values.TestedBy)
 
+            'TODO: Show a modal dialog within VB.NET to prompt the user for table input
+            ' The program will pause here safely (Excel COM still open) until user enters:
+            '   - Description (default: DevelopmentPhase from collected metadata)
+            '   - Engineer (default: TestedBy from collected metadata)
+            '   - Choose how to write into table: Append / Overwrite First / Overwrite Last / Overwrite by Index
+
+            'TODO2: After user input, write a new or existing row in the Title sheet table:
+            ' - Rev Column <-> auto-incremented value ('1' for first entry, next available number for subsequent entries)
+            ' - Engineer Column <-> user-provided or TestedBy value
+            ' - Description Column <-> user-provided or DevelopmentPhase value
+            ' - Prepared By Column <-> current date (DD/MM/YY, formatting already handled in Excel)
+
             wb.Save()
 
         Finally
@@ -55,6 +67,18 @@ Public Class TitleSheetUpdater
         WriteNamed(titleSheet, "PowerSupplyFirmwareVersion", values.FirmwareVersion)
         'WriteNamed(titleSheet, "Description", values.DevelopmentPhase)
         'WriteNamed(titleSheet, "Tester", values.TestedBy)
+
+        'TODO: Show a modal dialog within VB.NET to prompt the user for table input
+        ' The program will pause here safely (Excel COM still open) until user enters:
+        '   - Description (default: DevelopmentPhase from collected metadata)
+        '   - Engineer (default: TestedBy from collected metadata)
+        '   - Choose how to write into table: Append / Overwrite First / Overwrite Last / Overwrite by Index
+
+        'TODO2: After user input, write a new or existing row in the Title sheet table:
+        ' - Rev Column <-> auto-incremented value ('1' for first entry, next available number for subsequent entries)
+        ' - Engineer Column <-> user-provided or TestedBy value
+        ' - Description Column <-> user-provided or DevelopmentPhase value
+        ' - Prepared By Column <-> current date (DD/MM/YY, formatting already handled in Excel)
 
         wb.Save()
     End Sub
