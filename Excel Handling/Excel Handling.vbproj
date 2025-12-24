@@ -46,6 +46,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -69,6 +71,12 @@
     <Compile Include="Data\Processor\TestMetadataProcessor.vb" />
     <Compile Include="Data\Models\TestReportSheetInfo.vb" />
     <Compile Include="Data\Models\TitleSheetInfo.vb" />
+    <Compile Include="View\DialogPrompt\TitleTablePromptDialog.Designer.vb">
+      <DependentUpon>TitleTablePromptDialog.vb</DependentUpon>
+    </Compile>
+    <Compile Include="View\DialogPrompt\TitleTablePromptDialog.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Updaters\TitleSheetUpdater.vb" />
     <Compile Include="Data\Models\WorkbookNamedData.vb" />
     <Compile Include="Data\Processor\WorkbookNamedRangeCollector.vb" />
@@ -104,6 +112,9 @@
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\DialogPrompt\TitleTablePromptDialog.resx">
+      <DependentUpon>TitleTablePromptDialog.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
