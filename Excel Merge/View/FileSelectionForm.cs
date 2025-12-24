@@ -19,7 +19,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         InitializeComponent(); ;
         presenter = new FileSelectionPresenter(new FileSelectionModel(), this);
 
-        controlsToDisable.AddRange(new Control[] { button1, button2, });
+        controlsToDisable.AddRange(new Control[] { buttonTargetFileActionButton, buttonSelectionFileActionButton, });
         toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripButton1, toolStripButton2 });
 
         rbUseExistingFile.Checked = true;
@@ -31,11 +31,11 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public event EventHandler OpenFolderClicked;
 
-    public event EventHandler<InputFileMode> InputFileModeChanged;
+    public event EventHandler<TargetFileMode> TargetFileModeChanged;
 
     public void DisplayFileName(string fileName)
     {
-        textBox1.Text = fileName;
+        textBoxTargetFileFilename.Text = fileName;
     }
 
     public void DisplayDirectoryPath(string directoryPath)
@@ -143,12 +143,12 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void Button1_Click(object sender, EventArgs e)
     {
-        switch (presenter.InputFileMode)
+        switch (presenter.TargetFileMode)
         {
-            case InputFileMode.ExistingFile:
+            case TargetFileMode.ExistingFile:
                 presenter.SelectBaseFile();
                 break;
-            case InputFileMode.NewFile:
+            case TargetFileMode.NewFile:
                 presenter.SelectDirectoryPath();
                 break;
         }
@@ -161,9 +161,9 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private async void Button3_Click(object sender, EventArgs e)
     {
-        if (presenter.InputFileMode == InputFileMode.NewFile)
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
-            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, presenter.CreateNewFileAction);
+            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction(useTemplate: checkBoxUseReportTemplate.Checked));
         }
 
         await presenter.RunOperationAsync(OperationRequested.Merge, presenter.MergeAction);
@@ -189,61 +189,62 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         OpenFolderClicked?.Invoke(this, EventArgs.Empty);
     }
 
-    private void RbUseExistingFile_CheckedChanged(object sender, EventArgs e)
+    private void TargetFileMode_CheckedChanged(object sender, EventArgs e)
     {
         if (rbUseExistingFile.Checked)
         {
-            InputFileModeChanged?.Invoke(sender, InputFileMode.ExistingFile);
+            TargetFileModeChanged?.Invoke(sender, TargetFileMode.ExistingFile);
 
-            textBox1.ReadOnly = true;
-            textBox1.ForeColor = SystemColors.WindowText;
-            textBox1.Font = new Font(textBox1.Font, FontStyle.Regular);
-            button1.Text = "Select File";
+            textBoxTargetFileFilename.ReadOnly = true;
+            textBoxTargetFileFilename.ForeColor = SystemColors.WindowText;
+            textBoxTargetFileFilename.Font = new Font(textBoxTargetFileFilename.Font, FontStyle.Regular);
+            buttonTargetFileActionButton.Text = "Select File";
+
+            checkBoxUseReportTemplate.Enabled = false;
+            checkBoxUseReportTemplate.Checked = false;
         }
-    }
-
-    private void RbCreateNewFile_CheckedChanged(object sender, EventArgs e)
-    {
-        if (rbCreateNewFile.Checked)
+        else if (rbCreateNewFile.Checked)
         {
-            InputFileModeChanged?.Invoke(sender, InputFileMode.NewFile);
+            TargetFileModeChanged?.Invoke(sender, TargetFileMode.NewFile);
 
-            textBox1.ReadOnly = false;
-            TextBox1_Leave(textBox1, EventArgs.Empty);
-            button1.Text = "Select Folder";
+            textBoxTargetFileFilename.ReadOnly = false;
+            TextBoxTargetFileFilename_Leave(textBoxTargetFileFilename, EventArgs.Empty);
+            buttonTargetFileActionButton.Text = "Select Folder";
+
+            checkBoxUseReportTemplate.Enabled = true;
         }
     }
 
-    private void TextBox1_Enter(object sender, EventArgs e)
+    private void TextBoxTargetFileFilename_Enter(object sender, EventArgs e)
     {
-        if (presenter.InputFileMode == InputFileMode.NewFile)
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
-            textBox1.Text = string.Empty;
-            textBox1.ForeColor = SystemColors.WindowText;
-            textBox1.Font = new Font(textBox1.Font, FontStyle.Regular);
+            textBoxTargetFileFilename.Text = string.Empty;
+            textBoxTargetFileFilename.ForeColor = SystemColors.WindowText;
+            textBoxTargetFileFilename.Font = new Font(textBoxTargetFileFilename.Font, FontStyle.Regular);
         }
     }
 
-    private void TextBox1_KeyDown(object sender, KeyEventArgs e)
+    private void TextBoxTargetFileFilename_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.KeyCode == Keys.Enter && presenter.InputFileMode == InputFileMode.NewFile)
+        if (e.KeyCode == Keys.Enter && presenter.TargetFileMode == TargetFileMode.NewFile)
         {
             e.SuppressKeyPress = true;
-            this.SelectNextControl(textBox1, true, true, true, true);
+            this.SelectNextControl(textBoxTargetFileFilename, true, true, true, true);
         }
     }
 
-    private void TextBox1_Leave(object sender, EventArgs e)
+    private void TextBoxTargetFileFilename_Leave(object sender, EventArgs e)
     {
-        if (presenter.InputFileMode == InputFileMode.NewFile)
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
-            presenter.OnFilenameSet(textBox1.Text.Trim());
+            presenter.OnFilenameSet(textBoxTargetFileFilename.Text.Trim());
 
-            if (string.IsNullOrEmpty(textBox1.Text))
+            if (string.IsNullOrEmpty(textBoxTargetFileFilename.Text))
             {
-                textBox1.Text = PlaceholderText;
-                textBox1.ForeColor = SystemColors.GrayText;
-                textBox1.Font = new Font(textBox1.Font, FontStyle.Italic);
+                textBoxTargetFileFilename.Text = PlaceholderText;
+                textBoxTargetFileFilename.ForeColor = SystemColors.GrayText;
+                textBoxTargetFileFilename.Font = new Font(textBoxTargetFileFilename.Font, FontStyle.Italic);
             }
         }
     }

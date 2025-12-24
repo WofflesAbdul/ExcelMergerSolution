@@ -11,7 +11,7 @@ public interface IFileSelectionView
 
     event EventHandler OpenFolderClicked;
 
-    event EventHandler<InputFileMode> InputFileModeChanged; // new event for radio button toggle
+    event EventHandler<TargetFileMode> TargetFileModeChanged; // new event for radio button toggle
 
     void DisplayFileName(string fileName);
 

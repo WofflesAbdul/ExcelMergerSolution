@@ -54,7 +54,7 @@
     <Compile Include="Common\ModelStateChangedEventArgs.cs" />
     <Compile Include="Model\IFileSelectionModel.cs" />
     <Compile Include="Presenter\FileSelectionPresenter.cs" />
-    <Compile Include="Common\InputFileMode.cs" />
+    <Compile Include="Common\TargetFileMode.cs" />
     <Compile Include="Presenter\IFileSelectionPresenter.cs" />
     <Compile Include="View\FileSelectionForm.cs">
       <SubType>Form</SubType>

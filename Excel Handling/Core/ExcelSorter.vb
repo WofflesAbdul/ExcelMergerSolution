@@ -11,7 +11,7 @@ Public Class FunctionalTestSorter
             excelApp = New Excel.Application()
             wb = excelApp.Workbooks.Open(filePath)
 
-            Dim sheetInfoList As New List(Of SheetInfo)
+            Dim sheetInfoList As New List(Of SheetNameParsingInfo)
 
             For Each ws As Excel.Worksheet In wb.Sheets
                 Dim fullName As String = ws.Name
@@ -39,7 +39,7 @@ Public Class FunctionalTestSorter
                 ' Header priority
                 Dim headerPriority As Integer = HeaderSequence.GetHeaderPriority(fullName)
 
-                sheetInfoList.Add(New SheetInfo With {
+                sheetInfoList.Add(New SheetNameParsingInfo With {
                     .Worksheet = ws,
                     .OriginalName = fullName,
                     .baseIndex = baseIndex,
@@ -65,6 +65,12 @@ Public Class FunctionalTestSorter
             Next
 
             wb.Save()
+
+            Dim collector As New WorkbookNamedRangeCollector()
+            Dim data = collector.CollectFromOpenWorkbook(wb)
+            Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
+            Dim updater As New TitleSheetUpdater()
+            updater.UpdateTitleSheetFromOpenWorkbook(wb, resolved)
 
         Catch ex As Exception
             Throw New ApplicationException($"Sort failed: {ex.Message}", ex)

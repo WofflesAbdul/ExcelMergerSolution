@@ -1,7 +1,7 @@
 ﻿/// <summary>
 /// Defines the available input file modes.
 /// </summary>
-public enum InputFileMode
+public enum TargetFileMode
 {
     /// <summary>
     /// Indicates that an existing file will be used as the base.
