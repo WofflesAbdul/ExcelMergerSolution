@@ -163,7 +163,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     {
         if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
-            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction(useTemplate: checkBoxUseReportTemplate.Checked));
+            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction(useTemplate: checkBoxAddReportTemplate.Checked));
         }
 
         await presenter.RunOperationAsync(OperationRequested.Merge, presenter.MergeAction);
@@ -200,8 +200,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             textBoxTargetFileFilename.Font = new Font(textBoxTargetFileFilename.Font, FontStyle.Regular);
             buttonTargetFileActionButton.Text = "Select File";
 
-            checkBoxUseReportTemplate.Enabled = false;
-            checkBoxUseReportTemplate.Checked = false;
+            checkBoxAddReportTemplate.Enabled = false;
+            checkBoxAddReportTemplate.Checked = false;
         }
         else if (rbCreateNewFile.Checked)
         {
@@ -211,7 +211,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             TextBoxTargetFileFilename_Leave(textBoxTargetFileFilename, EventArgs.Empty);
             buttonTargetFileActionButton.Text = "Select Folder";
 
-            checkBoxUseReportTemplate.Enabled = true;
+            checkBoxAddReportTemplate.Enabled = true;
         }
     }
 

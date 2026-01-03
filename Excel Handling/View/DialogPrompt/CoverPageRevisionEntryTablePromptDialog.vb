@@ -1,6 +1,6 @@
 ﻿Imports System.Windows.Forms
 
-Public Class TitleTablePromptDialog
+Public Class CoverPageRevisionEntryTablePromptDialog
 
     Public Sub New(suggestedDescription As String, suggestedEngineer As String, suggestedRevision As Object)
         ' Required by designer

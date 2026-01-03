@@ -6,7 +6,7 @@ Public Class WorkbookNamedRangeCollector
         Dim excelApp As Excel.Application = Nothing
         Dim wb As Excel.Workbook = Nothing
 
-        Dim result As New WorkbookNamedData()
+        Dim reportWb As New WorkbookNamedData()
 
         Try
             excelApp = New Excel.Application()
@@ -14,18 +14,18 @@ Public Class WorkbookNamedRangeCollector
 
             For Each ws As Excel.Worksheet In wb.Sheets
 
-                If ws.Name.Equals("Title", StringComparison.OrdinalIgnoreCase) Then
-                    result.Title = ReadTitleSheet(ws)
+                If ws.Name.Equals("Cover Page", StringComparison.OrdinalIgnoreCase) Then
+                    reportWb.CoverPage = ReadCoverPageSheet(ws)
                 Else
                     Dim info = ReadTestSheet(ws)
                     If info IsNot Nothing Then
-                        result.TestSheets.Add(info)
+                        reportWb.TestSheets.Add(info)
                     End If
                 End If
 
             Next
 
-            Return result
+            Return reportWb
 
         Finally
             If wb IsNot Nothing Then wb.Close(SaveChanges:=False)
@@ -36,24 +36,24 @@ Public Class WorkbookNamedRangeCollector
     End Function
 
     Public Function CollectFromOpenWorkbook(wb As Excel.Workbook) As WorkbookNamedData
-        Dim result As New WorkbookNamedData()
+        Dim reportWb As New WorkbookNamedData()
 
         For Each ws As Excel.Worksheet In wb.Sheets
-            If ws.Name.Equals("Title", StringComparison.OrdinalIgnoreCase) Then
-                result.Title = ReadTitleSheet(ws)
+            If ws.Name.Equals("Cover Page", StringComparison.OrdinalIgnoreCase) Then
+                reportWb.CoverPage = ReadCoverPageSheet(ws)
             Else
                 Dim info = ReadTestSheet(ws)
                 If info IsNot Nothing Then
-                    result.TestSheets.Add(info)
+                    reportWb.TestSheets.Add(info)
                 End If
             End If
         Next
 
-        Return result
+        Return reportWb
     End Function
 
-    Private Function ReadTitleSheet(ws As Excel.Worksheet) As TitleSheetInfo
-        Return New TitleSheetInfo With {
+    Private Function ReadCoverPageSheet(ws As Excel.Worksheet) As CoverPageSheetInfo
+        Return New CoverPageSheetInfo With {
             .PowerSupplyModel = ReadNamed(ws, "PowerSupplyModel"),
             .PowerSupplySerialNumber = ReadNamed(ws, "PowerSupplySerialNumber"),
             .PowerSupplyFirmwareVersion = ReadNamed(ws, "PowerSupplyFirmwareVersion"),

@@ -1,24 +1,6 @@
 ﻿Public Class TestMetadataProcessor
 
-    Public Shared Sub Process(filePath As String)
-        ' Collect
-        Dim collector As New WorkbookNamedRangeCollector()
-        Dim data = collector.Collect(filePath)
-
-        If data Is Nothing OrElse data.TestSheets.Count = 0 Then Return
-
-        ' Resolve dominant values
-        Dim resolved = ResolveDominant(data.TestSheets)
-
-        ' Update Title
-        Dim updater As New TitleSheetUpdater()
-        updater.UpdateTitleSheet(filePath, resolved)
-    End Sub
-
-    Public Shared Function ResolveDominant(
-        sheets As List(Of TestReportSheetInfo)
-    ) As ResolvedTestMetadata
-
+    Public Shared Function ResolveDominant(sheets As List(Of TestReportSheetInfo)) As ResolvedTestMetadata
         Return New ResolvedTestMetadata With {
             .DevelopmentPhase = MostCommon(sheets.Select(Function(x) x.DevelopmentPhase)),
             .FirmwareVersion = MostCommon(sheets.Select(Function(x) x.FirmwareVersion)),

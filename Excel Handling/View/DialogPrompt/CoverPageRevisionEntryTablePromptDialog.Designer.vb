@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
-Partial Class TitleTablePromptDialog
+Partial Class CoverPageRevisionEntryTablePromptDialog
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
@@ -169,9 +169,9 @@ Partial Class TitleTablePromptDialog
         Me.grpEntryDetails.Size = New System.Drawing.Size(400, 127)
         Me.grpEntryDetails.TabIndex = 0
         Me.grpEntryDetails.TabStop = False
-        Me.grpEntryDetails.Text = "Entry Details"
+        Me.grpEntryDetails.Text = "Revision Entry Details"
         '
-        'TitleTablePromptDialog
+        'CoverPageRevisionEntryTablePromptDialog
         '
         Me.AcceptButton = Me.btnConfirm
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -185,7 +185,7 @@ Partial Class TitleTablePromptDialog
         Me.Margin = New System.Windows.Forms.Padding(4, 3, 4, 3)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
-        Me.Name = "TitleTablePromptDialog"
+        Me.Name = "CoverPageRevisionEntryTablePromptDialog"
         Me.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "Update Auto-DVT Report Overview Page"

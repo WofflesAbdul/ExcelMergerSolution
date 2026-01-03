@@ -2,43 +2,24 @@
 Imports System.Windows.Forms
 Imports Microsoft.Office.Interop
 
-Public Class TitleSheetUpdater
+Public Class CoverPageSheetUpdater
+    Public Sub UpdateCoverPageSheetFromOpenWorkbook(wb As Excel.Workbook, values As ResolvedTestMetadata)
+        Dim coverPageWorkSheet As Excel.Worksheet = Nothing
 
-    Public Sub UpdateTitleSheet(filePath As String, values As ResolvedTestMetadata)
-        Dim excelApp As Excel.Application = Nothing
-        Dim wb As Excel.Workbook = Nothing
-
-        Try
-            excelApp = New Excel.Application()
-            wb = excelApp.Workbooks.Open(filePath)
-
-            UpdateTitleSheetFromOpenWorkbook(wb, values)
-
-        Finally
-            If wb IsNot Nothing Then wb.Close(SaveChanges:=True)
-            If excelApp IsNot Nothing Then excelApp.Quit()
-            ReleaseComObject(wb)
-            ReleaseComObject(excelApp)
-        End Try
-    End Sub
-
-    Public Sub UpdateTitleSheetFromOpenWorkbook(wb As Excel.Workbook, values As ResolvedTestMetadata)
-        Dim titleSheet As Excel.Worksheet = Nothing
-
-        ' ---- Locate Title sheet ----
+        ' ---- Locate Cover Page worksheet ----
         For Each ws As Excel.Worksheet In wb.Sheets
-            If ws.Name.Equals("Title", StringComparison.OrdinalIgnoreCase) Then
-                titleSheet = ws
+            If ws.Name.Equals("Cover Page", StringComparison.OrdinalIgnoreCase) Then
+                coverPageWorkSheet = ws
                 Exit For
             End If
         Next
 
-        If titleSheet Is Nothing Then Return
+        If coverPageWorkSheet Is Nothing Then Return
 
         ' ---- Named fields ----
-        WriteNamed(titleSheet, "PowerSupplyModel", values.ModelNumber)
-        WriteNamed(titleSheet, "PowerSupplySerialNumber", values.SerialNumber)
-        WriteNamed(titleSheet, "PowerSupplyFirmwareVersion", values.FirmwareVersion)
+        WriteNamed(coverPageWorkSheet, "PowerSupplyModel", values.ModelNumber)
+        WriteNamed(coverPageWorkSheet, "PowerSupplySerialNumber", values.SerialNumber)
+        WriteNamed(coverPageWorkSheet, "PowerSupplyFirmwareVersion", values.FirmwareVersion)
 
         ' ---- Defaults for dialog ----
         Dim suggestedDescription = values.DevelopmentPhase
@@ -47,7 +28,7 @@ Public Class TitleSheetUpdater
         ' ---- Read latest Rev from table (if any) ----
         Dim totalRows As Integer
         Dim revList As List(Of String)
-        ReadTableColumnValues(titleSheet, "DvtReportOverviewTable", "Rev", totalRows, revList)
+        ReadTableColumnValues(coverPageWorkSheet, "DvtReportOverviewTable", "Rev", totalRows, revList)
 
         ' Safely get latest revision
         Dim latestRev As String = Nothing
@@ -59,7 +40,7 @@ Public Class TitleSheetUpdater
         Dim suggestedRev As String = IncrementRevision(latestRev)
 
         ' ---- Prompt user (blocks safely) ----
-        Using dlg As New TitleTablePromptDialog(suggestedDescription, suggestedEngineer, suggestedRev)
+        Using dlg As New CoverPageRevisionEntryTablePromptDialog(suggestedDescription, suggestedEngineer, suggestedRev)
             If dlg.ShowDialog() <> DialogResult.OK Then Return
 
             ' ---- Build table row values ----
@@ -70,7 +51,7 @@ Public Class TitleSheetUpdater
             {"Date Prepared", Date.Today}
         }
 
-            WriteToTable(titleSheet, "DvtReportOverviewTable", tableValues)
+            WriteToTable(coverPageWorkSheet, "DvtReportOverviewTable", tableValues)
         End Using
 
         wb.Save()

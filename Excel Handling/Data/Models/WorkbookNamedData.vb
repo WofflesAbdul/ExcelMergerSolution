@@ -1,5 +1,5 @@
 ﻿Public Class WorkbookNamedData
-    Public Property Title As TitleSheetInfo
+    Public Property CoverPage As CoverPageSheetInfo
     Public Property TestSheets As List(Of TestReportSheetInfo)
 
     Public Sub New()
