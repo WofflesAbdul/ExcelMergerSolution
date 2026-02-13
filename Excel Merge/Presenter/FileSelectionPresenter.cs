@@ -1,5 +1,4 @@
-﻿using Excel_Handling;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Excel_Handling;
 
 public class FileSelectionPresenter : IFileSelectionPresenter
 {
@@ -161,6 +161,17 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
             // Success message
             view.SetCompletionStatus(info.CompletedMessage);
+
+            if (op == OperationRequested.CreateNewFile)
+            {
+                // Auto-close after 10s
+                _ = MessageBoxHelper.ShowMessageAsync("Success", info.CompletedMessage, 10000);
+            }
+            else
+            {
+                // Non-blocking message box for Merge and Sort
+                _ = MessageBoxHelper.ShowMessageAsync("Success", info.CompletedMessage);
+            }
 
             // Special handling after merge
             if (op == OperationRequested.Merge)
