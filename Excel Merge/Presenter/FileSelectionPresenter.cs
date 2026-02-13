@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Excel_Handling;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Excel_Handling;
 
 public class FileSelectionPresenter : IFileSelectionPresenter
 {
@@ -169,7 +170,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
         catch (Exception ex)
         {
+            var fullMessage = BuildExceptionMessage(ex);
             view.SetCompletionStatus($"{info.ErrorMessage} {ex.Message}");
+            view.ShowError(info.ErrorMessage, fullMessage);
         }
         finally
         {
@@ -249,5 +252,21 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.SetSortButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFileButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFolderButtonEnabled(e.HasDirectoryPath);
+    }
+
+    private string BuildExceptionMessage(Exception ex)
+    {
+        var messages = new List<string>();
+        var current = ex;
+        int level = 0;
+
+        while (current != null)
+        {
+            messages.Add($"Level {level}: {current.Message}");
+            current = current.InnerException;
+            level++;
+        }
+
+        return string.Join(Environment.NewLine + Environment.NewLine, messages);
     }
 }
