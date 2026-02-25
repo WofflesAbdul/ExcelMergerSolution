@@ -71,6 +71,7 @@ Public Class FunctionalTestSorter
             Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
             Dim updater As New DvtReportSheetUpdater()
             updater.UpdateCoverPageSheetFromOpenWorkbook(wb, resolved)
+            updater.UpdateSummarySheet(wb)
 
         Catch ex As Exception
             Throw New ApplicationException($"Sort failed: {ex.Message}", ex)
