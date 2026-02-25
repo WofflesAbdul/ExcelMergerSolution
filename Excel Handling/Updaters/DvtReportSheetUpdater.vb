@@ -2,7 +2,7 @@
 Imports System.Windows.Forms
 Imports Microsoft.Office.Interop
 
-Public Class CoverPageSheetUpdater
+Public Class DvtReportSheetUpdater
     Public Sub UpdateCoverPageSheetFromOpenWorkbook(wb As Excel.Workbook, values As ResolvedTestMetadata)
         Dim coverPageWorkSheet As Excel.Worksheet = Nothing
 

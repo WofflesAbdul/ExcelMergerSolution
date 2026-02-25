@@ -69,7 +69,7 @@ Public Class FunctionalTestSorter
             Dim collector As New WorkbookNamedRangeCollector()
             Dim data = collector.CollectFromOpenWorkbook(wb)
             Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
-            Dim updater As New CoverPageSheetUpdater()
+            Dim updater As New DvtReportSheetUpdater()
             updater.UpdateCoverPageSheetFromOpenWorkbook(wb, resolved)
 
         Catch ex As Exception

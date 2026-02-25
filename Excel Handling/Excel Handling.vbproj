@@ -76,7 +76,7 @@
     <Compile Include="View\DialogPrompt\CoverPageRevisionEntryTablePromptDialog.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Updaters\TitleSheetUpdater.vb" />
+    <Compile Include="Updaters\DvtReportSheetUpdater.vb" />
     <Compile Include="Data\Models\WorkbookNamedData.vb" />
     <Compile Include="Data\Processor\WorkbookNamedRangeCollector.vb" />
     <Compile Include="Creators\ExcelFileFromTemplateCreator.vb" />
