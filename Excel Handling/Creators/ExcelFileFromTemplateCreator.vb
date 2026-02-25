@@ -14,9 +14,14 @@ Public Class ExcelFileFromTemplateCreator
         Dim templateWB As Excel.Workbook = Nothing
 
         Try
+            ' Ensure output directory exists
+            If Not IO.Directory.Exists(directoryPath) Then
+                IO.Directory.CreateDirectory(directoryPath)
+            End If
+
+            ' Get full template path
             Dim basePath As String = AppDomain.CurrentDomain.BaseDirectory
             Dim templateFullPath As String = IO.Path.Combine(basePath, TemplateRelativePath)
-
 
             If Not IO.File.Exists(templateFullPath) Then
                 Throw New IO.FileNotFoundException(
@@ -24,6 +29,8 @@ Public Class ExcelFileFromTemplateCreator
             End If
 
             excelApp = New Excel.Application()
+            excelApp.DisplayAlerts = False
+            excelApp.Visible = False
 
             ' Open template safely
             templateWB = excelApp.Workbooks.Open(
@@ -47,6 +54,9 @@ Public Class ExcelFileFromTemplateCreator
 
             ReleaseComObject(templateWB)
             ReleaseComObject(excelApp)
+
+            GC.Collect()
+            GC.WaitForPendingFinalizers()
         End Try
     End Function
 

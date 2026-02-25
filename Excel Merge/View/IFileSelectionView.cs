@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 public interface IFileSelectionView
 {
@@ -38,4 +39,6 @@ public interface IFileSelectionView
     void NewFileCreated();
 
     Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token);
+
+    void ShowError(string title, string message);
 }

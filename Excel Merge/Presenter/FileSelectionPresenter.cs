@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -161,6 +162,17 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             // Success message
             view.SetCompletionStatus(info.CompletedMessage);
 
+            if (op == OperationRequested.CreateNewFile)
+            {
+                // Auto-close after 10s
+                _ = MessageBoxHelper.ShowMessageAsync("Success", info.CompletedMessage, 10000);
+            }
+            else
+            {
+                // Non-blocking message box for Merge and Sort
+                _ = MessageBoxHelper.ShowMessageAsync("Success", info.CompletedMessage);
+            }
+
             // Special handling after merge
             if (op == OperationRequested.Merge)
             {
@@ -169,7 +181,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
         catch (Exception ex)
         {
+            var fullMessage = BuildExceptionMessage(ex);
             view.SetCompletionStatus($"{info.ErrorMessage} {ex.Message}");
+            view.ShowError(info.ErrorMessage, fullMessage);
         }
         finally
         {
@@ -249,5 +263,21 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.SetSortButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFileButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFolderButtonEnabled(e.HasDirectoryPath);
+    }
+
+    private string BuildExceptionMessage(Exception ex)
+    {
+        var messages = new List<string>();
+        var current = ex;
+        int level = 0;
+
+        while (current != null)
+        {
+            messages.Add($"Level {level}: {current.Message}");
+            current = current.InnerException;
+            level++;
+        }
+
+        return string.Join(Environment.NewLine + Environment.NewLine, messages);
     }
 }

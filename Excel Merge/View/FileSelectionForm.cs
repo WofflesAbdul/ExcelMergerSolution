@@ -248,4 +248,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             }
         }
     }
+
+    public void ShowError(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
 }
