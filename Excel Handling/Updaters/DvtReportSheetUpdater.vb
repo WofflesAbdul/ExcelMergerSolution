@@ -83,43 +83,6 @@ Partial Public Class DvtReportSheetUpdater
         End Try
     End Sub
 
-    Private Function IncrementRevision(latestRev As String) As String
-        If String.IsNullOrWhiteSpace(latestRev) Then Return "A"
-
-        ' Single letter
-        If latestRev.Length = 1 AndAlso Char.IsLetter(latestRev(0)) Then
-            Dim nextChar As Char = Chr(Asc(latestRev(0)) + 1)
-            If nextChar > "Z"c Then nextChar = "A"c ' wrap around if needed
-            Return nextChar.ToString()
-        End If
-
-        ' Try integer
-        Dim intVal As Integer
-        If Integer.TryParse(latestRev, intVal) Then
-            Return (intVal + 1).ToString()
-        End If
-
-        ' Try dot-separated numeric revision (e.g., "1.2.3")
-        Dim parts() As String = latestRev.Split("."c)
-        Dim allNumbers As Boolean = True
-
-        For Each p In parts
-            If Not Integer.TryParse(p, 0) Then
-                allNumbers = False
-                Exit For
-            End If
-        Next
-
-        If allNumbers Then
-            ' Increment the rightmost number
-            parts(parts.Length - 1) = (CInt(parts(parts.Length - 1)) + 1).ToString()
-            Return String.Join(".", parts)
-        End If
-
-        ' Fallback: append "1"
-        Return latestRev & ".1"
-    End Function
-
     Private Sub ReleaseComObject(obj As Object)
         Try
             If obj IsNot Nothing Then Marshal.ReleaseComObject(obj)
