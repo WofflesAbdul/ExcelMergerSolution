@@ -11,7 +11,8 @@ Partial Public Class DvtReportSheetUpdater
 
         ' ---- Locate Cover Page worksheet ----
         For Each ws As Excel.Worksheet In wb.Sheets
-            If ws.Name.Equals("Cover Page", StringComparison.OrdinalIgnoreCase) Then
+            If ws.Name.Equals("Cover Page", StringComparison.OrdinalIgnoreCase) _
+            OrElse ws.Name.Equals("Title", StringComparison.OrdinalIgnoreCase) Then
                 coverPageWorkSheet = ws
                 Exit For
             End If
