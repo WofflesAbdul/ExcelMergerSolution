@@ -101,7 +101,12 @@ Public NotInheritable Class TestItemRegistry
     End Property
 
     Public Shared Function GetAll() As IEnumerable(Of TestItem)
-        Return _items.Values.OrderBy(Function(x) x.ItemName)
+        Return _items.Values _
+        .OrderBy(Function(x) String.IsNullOrWhiteSpace(x.DVT)) _
+        .ThenBy(Function(x) x.DVT) _
+        .ThenBy(Function(x) String.IsNullOrWhiteSpace(x.OMS)) _
+        .ThenBy(Function(x) x.OMS) _
+        .ThenBy(Function(x) x.ItemName)
     End Function
 
     Public Shared Function TryGet(itemName As String,

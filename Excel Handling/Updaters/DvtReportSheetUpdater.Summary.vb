@@ -22,9 +22,7 @@ Partial Public Class DvtReportSheetUpdater
 
         PopulateLookupTable(lookupTable)
 
-        ApplyDataValidation(summaryWorkSheet)
-
-        ApplyLookupFormulas(summaryWorkSheet)
+        PrepareSummaryTable(summaryWorkSheet)
 
     End Sub
 
@@ -40,18 +38,16 @@ Partial Public Class DvtReportSheetUpdater
             End If
         Next
 
-        If lo IsNot Nothing Then
-            Return lo
-        End If
+        If lo IsNot Nothing Then Return lo
 
         ' ---- Create new table ----
 
         Dim startRow As Integer = 1
 
-        'If DvtReportSummaryTable exists, place below it
+        ' If DvtReportSummaryTable exists, place below it
         For Each tbl As Excel.ListObject In ws.ListObjects
             If tbl.Name.Equals("DvtReportSummaryTable", StringComparison.OrdinalIgnoreCase) Then
-                startRow = tbl.Range.Row + tbl.Range.Rows.Count + 3
+                startRow = tbl.Range.Row + tbl.Range.Rows.Count + 200
                 Exit For
             End If
         Next
@@ -76,29 +72,42 @@ Partial Public Class DvtReportSheetUpdater
 
     Private Sub PopulateLookupTable(lo As Excel.ListObject)
 
-        Dim coll = TestItemRegistry.GetAll()
-        Dim requiredCount As Integer = coll.Count
+        Dim items = TestItemRegistry.GetAll().ToList()
 
-        'Clear existing rows
-        If lo.ListRows.Count > 0 Then
-            lo.DataBodyRange.Delete()
-        End If
+        ' Clear table completely
+        While lo.ListRows.Count > 0
+            lo.ListRows(1).Delete()
+        End While
 
-        Dim ti As TestItem
+        If items.Count = 0 Then Exit Sub
 
-        For Each ti In coll
-            Dim newRow As Excel.ListRow = lo.ListRows.Add()
-            newRow.Range.Cells(1, 1).Value = ti.DVT
-            newRow.Range.Cells(1, 2).Value = ti.OMS
-            newRow.Range.Cells(1, 3).Value = ti.ItemName
+        ' Resize table to correct size
+        Dim startCell As Excel.Range = lo.HeaderRowRange.Cells(1, 1)
+        Dim newRange As Excel.Range =
+            startCell.Resize(items.Count + 1, 3)
+
+        lo.Resize(newRange)
+
+        ' Build 2D array for Excel
+        Dim data(items.Count - 1, 2) As Object
+
+        For i As Integer = 0 To items.Count - 1
+            data(i, 0) = items(i).DVT
+            data(i, 1) = items(i).OMS
+            data(i, 2) = items(i).ItemName
         Next
 
-        'Hide rows
+        lo.DataBodyRange.Value = data
+
+        ' Hide lookup table
         lo.Range.EntireRow.Hidden = True
 
     End Sub
 
-    Private Sub ApplyDataValidation(ws As Excel.Worksheet)
+    ' ------------------------------
+    ' Prepare summary table states and apply validation/formulas once
+    ' ------------------------------
+    Private Sub PrepareSummaryTable(ws As Excel.Worksheet)
 
         Dim summaryTable As Excel.ListObject = Nothing
 
@@ -110,15 +119,112 @@ Partial Public Class DvtReportSheetUpdater
         Next
 
         If summaryTable Is Nothing Then Return
-        If summaryTable.DataBodyRange Is Nothing Then Return
 
-        Dim itemsColumn As Excel.ListColumn = summaryTable.ListColumns("ITEMS")
+        ' ---------------------------
+        ' Step 1: Remove phantom/extra empty rows
+        ' ---------------------------
+        For i As Integer = summaryTable.ListRows.Count To 1 Step -1
+            Dim rowEmpty As Boolean = True
+            For Each cell As Excel.Range In summaryTable.ListRows(i).Range.Cells
+                If Not String.IsNullOrWhiteSpace(cell.Text) Then
+                    rowEmpty = False
+                    Exit For
+                End If
+            Next
+            If rowEmpty Then
+                summaryTable.ListRows(i).Delete()
+            End If
+        Next
+
+        ' ---------------------------
+        ' Step 2: Add a single empty row if table is empty
+        ' ---------------------------
+        If summaryTable.ListRows.Count = 0 Then
+            summaryTable.ListRows.Add()
+        End If
+
+        ' ---------------------------
+        ' Step 3: Apply data validation and formulas only if not already applied
+        ' ---------------------------
+        Dim applyFormulas As Boolean = False
+        Try
+            Dim dvtCol = summaryTable.ListColumns("DVT").DataBodyRange
+            Dim omsCol = summaryTable.ListColumns("OMS").DataBodyRange
+
+            ' Apply formulas only if first cell has no formula
+            If Not dvtCol.Cells(1, 1).HasFormula AndAlso Not omsCol.Cells(1, 1).HasFormula Then
+                applyFormulas = True
+            End If
+        Catch
+            ' Columns missing? Apply formulas anyway
+            applyFormulas = True
+        End Try
+
+        If applyFormulas Then
+            ApplyDataValidation(ws)
+            ApplyLookupFormulas(ws)
+        End If
+
+    End Sub
+
+    Private Sub ApplyDataValidation(ws As Excel.Worksheet)
+
+        Dim summaryTable As Excel.ListObject = Nothing
+        Dim lookupTable As Excel.ListObject = Nothing
+
+        ' Locate tables
+        For Each tbl As Excel.ListObject In ws.ListObjects
+
+            If tbl.Name.Equals("DvtReportSummaryTable",
+                               StringComparison.OrdinalIgnoreCase) Then
+                summaryTable = tbl
+            End If
+
+            If tbl.Name.Equals("TestLookup",
+                               StringComparison.OrdinalIgnoreCase) Then
+                lookupTable = tbl
+            End If
+
+        Next
+
+        If summaryTable Is Nothing Then Return
+        If lookupTable Is Nothing Then Return
+
+        ' Ensure at least 1 row in summary table
+        If summaryTable.ListRows.Count = 0 Then
+            summaryTable.ListRows.Add()
+        End If
+
+        If lookupTable.ListRows.Count = 0 Then Return
+
+        Dim itemsColumn As Excel.ListColumn = Nothing
+        Dim lookupItemsColumn As Excel.ListColumn = Nothing
+
+        Try
+            itemsColumn = summaryTable.ListColumns("ITEMS")
+            lookupItemsColumn = lookupTable.ListColumns("ITEMS")
+        Catch
+            Return
+        End Try
+
+        If itemsColumn Is Nothing Then Return
+        If lookupItemsColumn Is Nothing Then Return
+        If itemsColumn.DataBodyRange Is Nothing Then Return
+        If lookupItemsColumn.DataBodyRange Is Nothing Then Return
+
+        ' Get absolute address of lookup range
+        Dim lookupRangeAddress As String =
+            lookupItemsColumn.DataBodyRange.Address(
+                ReferenceStyle:=Excel.XlReferenceStyle.xlA1,
+                RowAbsolute:=True,
+                ColumnAbsolute:=True,
+                External:=True)
 
         With itemsColumn.DataBodyRange.Validation
             .Delete()
             .Add(Type:=Excel.XlDVType.xlValidateList,
                  AlertStyle:=Excel.XlDVAlertStyle.xlValidAlertStop,
-                 Formula1:="=TestLookup[ITEMS]")
+                 Formula1:="=" & lookupRangeAddress)
             .IgnoreBlank = True
             .InCellDropdown = True
         End With
@@ -138,6 +244,9 @@ Partial Public Class DvtReportSheetUpdater
 
         If summaryTable Is Nothing Then Return
         If summaryTable.DataBodyRange Is Nothing Then Return
+
+        summaryTable.ListColumns("DVT").DataBodyRange.Formula = ""
+        summaryTable.ListColumns("OMS").DataBodyRange.Formula = ""
 
         summaryTable.ListColumns("DVT").DataBodyRange.Formula =
             "=XLOOKUP([@ITEMS], TestLookup[ITEMS], TestLookup[DVT], """")"
