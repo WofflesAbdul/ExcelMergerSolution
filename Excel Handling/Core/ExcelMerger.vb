@@ -35,8 +35,10 @@ Public Class ExcelMerger
             Dim collector As New WorkbookNamedRangeCollector()
             Dim data = collector.CollectFromOpenWorkbook(destWB)
             Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
-            Dim updater As New CoverPageSheetUpdater()
+            Dim updater As New DvtReportSheetUpdater()
             updater.UpdateCoverPageSheetFromOpenWorkbook(destWB, resolved)
+            updater.UpdateSummarySheet(destWB)
+
 
         Catch ex As Exception
             Throw New ApplicationException($"Merge failed: {ex.Message}", ex)
