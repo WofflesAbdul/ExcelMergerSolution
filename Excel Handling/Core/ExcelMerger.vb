@@ -36,8 +36,8 @@ Public Class ExcelMerger
             Dim data = collector.CollectFromOpenWorkbook(destWB)
             Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
             Dim updater As New DvtReportSheetUpdater()
+            updater.UpdateSummarySheet(destWB, resolved)
             updater.UpdateCoverPageSheetFromOpenWorkbook(destWB, resolved)
-            updater.UpdateSummarySheet(destWB)
 
 
         Catch ex As Exception

@@ -5,7 +5,7 @@ Imports Microsoft.Office.Interop
 
 Partial Public Class DvtReportSheetUpdater
 
-    Public Sub UpdateSummarySheet(wb As Excel.Workbook)
+    Public Sub UpdateSummarySheet(wb As Excel.Workbook, values As ResolvedTestMetadata)
 
         Dim summaryWorkSheet As Excel.Worksheet = Nothing
 
@@ -17,6 +17,9 @@ Partial Public Class DvtReportSheetUpdater
         Next
 
         If summaryWorkSheet Is Nothing Then Return
+
+        WriteNamed(summaryWorkSheet, "SummaryPageTestModel", values.ModelNumber)
+        'WriteNamed(summaryWorkSheet, "SummaryPageTestTemperature", values.) 'TODO 
 
         Dim lookupTable = EnsureLookupTable(summaryWorkSheet)
 
@@ -43,16 +46,18 @@ Partial Public Class DvtReportSheetUpdater
         ' ---- Create new table ----
 
         Dim startRow As Integer = 1
+        Dim startColumn As Integer = 1
 
-        ' If DvtReportSummaryTable exists, place below it
+        ' If DvtReportSummaryTable exists, place beside it
         For Each tbl As Excel.ListObject In ws.ListObjects
             If tbl.Name.Equals("DvtReportSummaryTable", StringComparison.OrdinalIgnoreCase) Then
-                startRow = tbl.Range.Row + tbl.Range.Rows.Count + 200
+                startRow = tbl.Range.Row
+                startColumn = tbl.Range.Column + tbl.Range.Columns.Count + 1
                 Exit For
             End If
         Next
 
-        Dim headerRange As Excel.Range = ws.Range("A" & startRow & ":C" & startRow)
+        Dim headerRange As Excel.Range = ws.Range(ws.Cells(startRow, startColumn), ws.Cells(startRow, startColumn + 2))
 
         headerRange.Cells(1, 1).Value = "DVT"
         headerRange.Cells(1, 2).Value = "OMS"
@@ -99,9 +104,10 @@ Partial Public Class DvtReportSheetUpdater
 
         lo.DataBodyRange.Value = data
 
-        ' Hide lookup table
-        lo.Range.EntireRow.Hidden = True
-
+        ' Hide lookup table, along with proper formatting
+        lo.Range.EntireColumn.Hidden = True
+        lo.Range.WrapText = False
+        lo.Range.Columns.AutoFit()
     End Sub
 
     ' ------------------------------
