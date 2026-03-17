@@ -22,5 +22,29 @@ namespace Excel_Merge.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastSavedFile {
+            get {
+                return ((string)(this["LastSavedFile"]));
+            }
+            set {
+                this["LastSavedFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ApplyNextRevision {
+            get {
+                return ((bool)(this["ApplyNextRevision"]));
+            }
+            set {
+                this["ApplyNextRevision"] = value;
+            }
+        }
     }
 }

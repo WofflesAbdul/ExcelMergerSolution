@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Excel_Handling;
+using Excel_Merge.Properties;
 
 public class FileSelectionPresenter : IFileSelectionPresenter
 {
@@ -178,6 +179,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             {
                 model.ClearTargetFiles();
             }
+
+            Settings.Default.LastSavedFile = model.ExistingBaseFilePath;
+            Settings.Default.Save();
         }
         catch (Exception ex)
         {
@@ -231,7 +235,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     public Task CreateNewFileAction(bool useTemplate)
     {
-        return Task.Run((Action)(() =>
+        return Task.Run(() =>
         {
             string createdFilePath;
             if (useTemplate)
@@ -250,7 +254,30 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             model.NewFileName = null;
             model.DirectoryPath = null;
             model.ExistingBaseFilePath = createdFilePath;
-        }));
+        });
+    }
+
+    public void LoadLastFile()
+    {
+        string lastSavedFile = Settings.Default.LastSavedFile;
+
+        if (string.IsNullOrEmpty(lastSavedFile))
+        {
+            return;
+        }
+
+        switch (TargetFileMode)
+        {
+            case TargetFileMode.ExistingFile:
+                model.ExistingBaseFilePath = lastSavedFile;
+                break;
+
+                /// <remarks> DO NOT USE, unless placeholder font is handled to default upon use. </remarks>
+            //case TargetFileMode.NewFile:
+            //    model.NewFileName = Path.GetFileName(lastSavedFile);
+            //    model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
+            //    break;
+        }
     }
 
     private void UpdateView(ModelStateChangedEventArgs e)

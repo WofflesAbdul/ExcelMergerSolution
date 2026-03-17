@@ -52,17 +52,18 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.checkBoxAddReportTemplate = new System.Windows.Forms.CheckBox();
             this.rbCreateNewFile = new System.Windows.Forms.RadioButton();
             this.rbUseExistingFile = new System.Windows.Forms.RadioButton();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripDropDownButton();
             this.openFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openContainingFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.loadLastFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.checkBoxAddReportTemplate = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -441,9 +442,7 @@
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton2,
-            this.toolStripSeparator3,
-            this.toolStripButton1,
-            this.toolStripSeparator4});
+            this.toolStripSeparator3});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -456,7 +455,11 @@
             this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripButton2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openFileToolStripMenuItem,
-            this.openContainingFolderToolStripMenuItem});
+            this.openContainingFolderToolStripMenuItem,
+            this.toolStripSeparator6,
+            this.loadLastFileToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.resetToolStripMenuItem});
             this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
             this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
@@ -480,34 +483,34 @@
             this.openContainingFolderToolStripMenuItem.Text = "Open Containing Folder";
             this.openContainingFolderToolStripMenuItem.Click += new System.EventHandler(this.ButtonOpenFolder_Click);
             // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(198, 6);
+            // 
+            // loadLastFileToolStripMenuItem
+            // 
+            this.loadLastFileToolStripMenuItem.Name = "loadLastFileToolStripMenuItem";
+            this.loadLastFileToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.loadLastFileToolStripMenuItem.Text = "Load Last File";
+            this.loadLastFileToolStripMenuItem.Click += new System.EventHandler(this.LoadLastFileToolStripMenuItem_Click);
+            // 
+            // resetToolStripMenuItem
+            // 
+            this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
+            this.resetToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.resetToolStripMenuItem.Text = "Reset Program";
+            this.resetToolStripMenuItem.Click += new System.EventHandler(this.ButtonReset_Click);
+            // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.resetToolStripMenuItem});
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(66, 25);
-            this.toolStripButton1.Text = "Program";
-            // 
-            // resetToolStripMenuItem
-            // 
-            this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
-            this.resetToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-            this.resetToolStripMenuItem.Text = "Reset Program";
-            this.resetToolStripMenuItem.Click += new System.EventHandler(this.ButtonReset_Click);
-            // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(198, 6);
             // 
             // FileSelectionForm
             // 
@@ -558,12 +561,9 @@
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     private System.Windows.Forms.ToolStripLabel toolStripLabel3;
-    private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     private System.Windows.Forms.ToolStripDropDownButton toolStripButton2;
-    private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     private System.Windows.Forms.ToolStripMenuItem openFileToolStripMenuItem;
-    private System.Windows.Forms.ToolStripDropDownButton toolStripButton1;
     private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem openContainingFolderToolStripMenuItem;
     private System.Windows.Forms.Label label2;
@@ -583,4 +583,8 @@
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
     private System.Windows.Forms.ToolStripLabel toolStripLabel5;
     private System.Windows.Forms.CheckBox checkBoxAddReportTemplate;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+    private System.Windows.Forms.ToolStripMenuItem loadLastFileToolStripMenuItem;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 }

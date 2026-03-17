@@ -16,11 +16,11 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public FileSelectionForm()
     {
-        InitializeComponent(); ;
+        InitializeComponent();
         presenter = new FileSelectionPresenter(new FileSelectionModel(), this);
 
         controlsToDisable.AddRange(new Control[] { buttonTargetFileActionButton, buttonSelectionFileActionButton, });
-        toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripButton1, toolStripButton2 });
+        toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripButton2 });
 
         rbUseExistingFile.Checked = true;
     }
@@ -134,6 +134,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     {
         rbUseExistingFile.Checked = true;
     }
+
+    public void ShowError(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
 
     private void Form1_Load(object sender, EventArgs e)
     {
@@ -249,5 +251,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         }
     }
 
-    public void ShowError(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+    private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        presenter.LoadLastFile();
+    }
 }
