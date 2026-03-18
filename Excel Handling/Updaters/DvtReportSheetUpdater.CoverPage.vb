@@ -49,11 +49,11 @@ Partial Public Class DvtReportSheetUpdater
 
             ' ---- Build table row values ----
             Dim tableValues As New Dictionary(Of String, Object) From {
-            {"Rev", dlg.Revision},
-            {"Engineer", dlg.Engineer},
-            {"Description", dlg.Description},
-            {"Date Prepared", Date.Today}
-        }
+                {"Rev", dlg.Revision},
+                {"Engineer", dlg.Engineer},
+                {"Description", dlg.Description},
+                {"Date Prepared", Date.Today}
+            }
 
             WriteToTable(coverPageWorkSheet, "DvtReportOverviewTable", tableValues)
         End Using

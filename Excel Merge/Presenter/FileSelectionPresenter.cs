@@ -273,10 +273,10 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 break;
 
                 /// <remarks> DO NOT USE, unless placeholder font is handled to default upon use. </remarks>
-            //case TargetFileMode.NewFile:
-            //    model.NewFileName = Path.GetFileName(lastSavedFile);
-            //    model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
-            //    break;
+            case TargetFileMode.NewFile:
+                //    model.NewFileName = Path.GetFileName(lastSavedFile);
+                model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
+                break;
         }
     }
 
