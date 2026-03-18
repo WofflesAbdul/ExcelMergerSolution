@@ -3,7 +3,7 @@ Imports System.Runtime.InteropServices
 
 Public Class FunctionalTestSorter
 
-    Public Sub SortSheets(filePath As String)
+    Public Sub SortSheets(filePath As String, skipNextRevision As Boolean)
         Dim excelApp As Excel.Application = Nothing
         Dim wb As Excel.Workbook = Nothing
 
@@ -69,8 +69,9 @@ Public Class FunctionalTestSorter
             Dim collector As New WorkbookNamedRangeCollector()
             Dim data = collector.CollectFromOpenWorkbook(wb)
             Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
-            Dim updater As New CoverPageSheetUpdater()
-            updater.UpdateCoverPageSheetFromOpenWorkbook(wb, resolved)
+            Dim updater As New DvtReportSheetUpdater()
+            updater.UpdateSummarySheet(wb, resolved)
+            updater.UpdateCoverPageSheetFromOpenWorkbook(wb, resolved, skipNextRevision)
 
         Catch ex As Exception
             Throw New ApplicationException($"Sort failed: {ex.Message}", ex)
