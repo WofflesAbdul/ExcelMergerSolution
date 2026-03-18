@@ -6,7 +6,7 @@ Imports Microsoft.Office.Interop
 
 Partial Public Class DvtReportSheetUpdater
 
-    Public Sub UpdateCoverPageSheetFromOpenWorkbook(wb As Excel.Workbook, values As ResolvedTestMetadata)
+    Public Sub UpdateCoverPageSheetFromOpenWorkbook(wb As Excel.Workbook, values As ResolvedTestMetadata, skipNextRevision As Boolean)
         Dim coverPageWorkSheet As Excel.Worksheet = Nothing
 
         ' ---- Locate Cover Page worksheet ----
@@ -38,6 +38,11 @@ Partial Public Class DvtReportSheetUpdater
         Dim latestRev As String = Nothing
         If revList IsNot Nothing AndAlso revList.Count > 0 Then
             latestRev = revList.Last()
+        End If
+
+        ' ---- Skip logic ----
+        If skipNextRevision AndAlso Not String.IsNullOrEmpty(latestRev) Then
+            Return ' Skip only if this is NOT a new entry
         End If
 
         ' ---- Auto-increment revision ----

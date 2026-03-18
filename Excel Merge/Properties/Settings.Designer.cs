@@ -38,12 +38,12 @@ namespace Excel_Merge.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ApplyNextRevision {
+        public bool SkipNextRevision {
             get {
-                return ((bool)(this["ApplyNextRevision"]));
+                return ((bool)(this["SkipNextRevision"]));
             }
             set {
-                this["ApplyNextRevision"] = value;
+                this["SkipNextRevision"] = value;
             }
         }
     }

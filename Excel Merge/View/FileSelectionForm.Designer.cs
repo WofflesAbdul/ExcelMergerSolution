@@ -56,14 +56,17 @@
             this.rbCreateNewFile = new System.Windows.Forms.RadioButton();
             this.rbUseExistingFile = new System.Windows.Forms.RadioButton();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.toolStripButton2 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripDropDownButtonFile = new System.Windows.Forms.ToolStripDropDownButton();
             this.openFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openContainingFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.loadLastFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripDropDownButtonEdit = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItemSkipNextRevision = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -441,8 +444,10 @@
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton2,
-            this.toolStripSeparator3});
+            this.toolStripDropDownButtonFile,
+            this.toolStripSeparator3,
+            this.toolStripDropDownButtonEdit,
+            this.toolStripSeparator7});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -450,22 +455,22 @@
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // toolStripButton2
+            // toolStripDropDownButtonFile
             // 
-            this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButton2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripDropDownButtonFile.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButtonFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openFileToolStripMenuItem,
             this.openContainingFolderToolStripMenuItem,
             this.toolStripSeparator6,
             this.loadLastFileToolStripMenuItem,
             this.toolStripSeparator4,
             this.resetToolStripMenuItem});
-            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
-            this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.toolStripButton2.Name = "toolStripButton2";
-            this.toolStripButton2.Size = new System.Drawing.Size(38, 25);
-            this.toolStripButton2.Text = "File";
+            this.toolStripDropDownButtonFile.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButtonFile.Image")));
+            this.toolStripDropDownButtonFile.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButtonFile.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.toolStripDropDownButtonFile.Name = "toolStripDropDownButtonFile";
+            this.toolStripDropDownButtonFile.Size = new System.Drawing.Size(38, 25);
+            this.toolStripDropDownButtonFile.Text = "File";
             // 
             // openFileToolStripMenuItem
             // 
@@ -495,6 +500,11 @@
             this.loadLastFileToolStripMenuItem.Text = "Load Last File";
             this.loadLastFileToolStripMenuItem.Click += new System.EventHandler(this.LoadLastFileToolStripMenuItem_Click);
             // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(198, 6);
+            // 
             // resetToolStripMenuItem
             // 
             this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
@@ -507,10 +517,30 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripSeparator4
+            // toolStripDropDownButtonEdit
             // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(198, 6);
+            this.toolStripDropDownButtonEdit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButtonEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemSkipNextRevision});
+            this.toolStripDropDownButtonEdit.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButtonEdit.Image")));
+            this.toolStripDropDownButtonEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButtonEdit.Name = "toolStripDropDownButtonEdit";
+            this.toolStripDropDownButtonEdit.Size = new System.Drawing.Size(40, 22);
+            this.toolStripDropDownButtonEdit.Text = "Edit";
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripMenuItemSkipNextRevision
+            // 
+            this.toolStripMenuItemSkipNextRevision.CheckOnClick = true;
+            this.toolStripMenuItemSkipNextRevision.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripMenuItemSkipNextRevision.Name = "toolStripMenuItemSkipNextRevision";
+            this.toolStripMenuItemSkipNextRevision.Size = new System.Drawing.Size(236, 22);
+            this.toolStripMenuItemSkipNextRevision.Text = "Skip Next Revision Assignment";
+            this.toolStripMenuItemSkipNextRevision.CheckedChanged += new System.EventHandler(this.ToolStripMenuItemSkipNextRevision_CheckedChanged);
             // 
             // FileSelectionForm
             // 
@@ -562,7 +592,7 @@
     private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     private System.Windows.Forms.ToolStripLabel toolStripLabel3;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-    private System.Windows.Forms.ToolStripDropDownButton toolStripButton2;
+    private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonFile;
     private System.Windows.Forms.ToolStripMenuItem openFileToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem openContainingFolderToolStripMenuItem;
@@ -587,4 +617,7 @@
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     private System.Windows.Forms.ToolStripMenuItem loadLastFileToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+    private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonEdit;
+    private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSkipNextRevision;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
 }

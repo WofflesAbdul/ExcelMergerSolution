@@ -208,9 +208,10 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
             // Pass a lambda to report progress
             merger.MergeFiles(
-                model.ExistingBaseFilePath,
-                model.TargetFilePaths,
-                percent => view.SetProgress(percent)
+                baseFile: model.ExistingBaseFilePath,
+                targets: model.TargetFilePaths,
+                skipNextRevision: Settings.Default.SkipNextRevision,
+                reportProgress: percent => view.SetProgress(percent)
             );
 
             ExcelFileCreator.RemovePlaceholderSheets(model.ExistingBaseFilePath);
@@ -225,7 +226,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         var sorterTask = Task.Run(() =>
         {
             var sorter = new FunctionalTestSorter();
-            sorter.SortSheets(model.ExistingBaseFilePath);
+            sorter.SortSheets(
+                filePath: model.ExistingBaseFilePath, 
+                skipNextRevision: Settings.Default.SkipNextRevision);
         });
 
         await Task.WhenAll(sorterTask, animationTask);
@@ -272,7 +275,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 model.ExistingBaseFilePath = lastSavedFile;
                 break;
 
-                /// <remarks> DO NOT USE, unless placeholder font is handled to default upon use. </remarks>
+                /// <remarks> DO NOT USE, unless placeholder font is reverted to default upon use. </remarks>
             case TargetFileMode.NewFile:
                 //    model.NewFileName = Path.GetFileName(lastSavedFile);
                 model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);

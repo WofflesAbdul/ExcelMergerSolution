@@ -5,7 +5,7 @@
     <Setting Name="LastSavedFile" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ApplyNextRevision" Type="System.Boolean" Scope="User">
+    <Setting Name="SkipNextRevision" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

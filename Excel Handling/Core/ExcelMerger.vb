@@ -1,7 +1,7 @@
 ﻿Imports Microsoft.Office.Interop
 
 Public Class ExcelMerger
-    Public Sub MergeFiles(baseFile As String, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing)
+    Public Sub MergeFiles(baseFile As String, targets As IEnumerable(Of String), skipNextRevision As Boolean, Optional reportProgress As Action(Of Integer) = Nothing)
         Dim excelApp As Excel.Application = Nothing
         Dim destWB As Excel.Workbook = Nothing
 
@@ -37,7 +37,7 @@ Public Class ExcelMerger
             Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
             Dim updater As New DvtReportSheetUpdater()
             updater.UpdateSummarySheet(destWB, resolved)
-            updater.UpdateCoverPageSheetFromOpenWorkbook(destWB, resolved)
+            updater.UpdateCoverPageSheetFromOpenWorkbook(destWB, resolved, skipNextRevision)
 
 
         Catch ex As Exception

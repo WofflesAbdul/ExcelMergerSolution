@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Excel_Merge.Properties;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -20,7 +21,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         presenter = new FileSelectionPresenter(new FileSelectionModel(), this);
 
         controlsToDisable.AddRange(new Control[] { buttonTargetFileActionButton, buttonSelectionFileActionButton, });
-        toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripButton2 });
+        toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripDropDownButtonFile });
 
         rbUseExistingFile.Checked = true;
     }
@@ -254,5 +255,11 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e)
     {
         presenter.LoadLastFile();
+    }
+
+    private void ToolStripMenuItemSkipNextRevision_CheckedChanged(object sender, EventArgs e)
+    {
+        Settings.Default.SkipNextRevision = toolStripMenuItemSkipNextRevision.Checked;
+        Settings.Default.Save();
     }
 }
