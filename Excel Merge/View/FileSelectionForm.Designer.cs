@@ -39,6 +39,7 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel5 = new System.Windows.Forms.ToolStripLabel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.ButtonMergeAndSort = new System.Windows.Forms.Button();
             this.panel3 = new System.Windows.Forms.Panel();
             this.buttonSelectionFileActionButton = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
@@ -47,8 +48,8 @@
             this.textBoxTargetFileFilename = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.ButtonMerge = new System.Windows.Forms.Button();
+            this.ButtonSort = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -63,7 +64,6 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -196,12 +196,13 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.142858F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.142858F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.142858F));
+            this.tableLayoutPanel1.Controls.Add(this.ButtonMergeAndSort, 5, 6);
             this.tableLayoutPanel1.Controls.Add(this.panel3, 3, 4);
             this.tableLayoutPanel1.Controls.Add(this.panel2, 3, 2);
             this.tableLayoutPanel1.Controls.Add(this.label2, 1, 4);
             this.tableLayoutPanel1.Controls.Add(this.label1, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.button3, 5, 6);
-            this.tableLayoutPanel1.Controls.Add(this.button4, 6, 7);
+            this.tableLayoutPanel1.Controls.Add(this.ButtonMerge, 5, 7);
+            this.tableLayoutPanel1.Controls.Add(this.ButtonSort, 7, 7);
             this.tableLayoutPanel1.Controls.Add(this.panel4, 3, 3);
             this.tableLayoutPanel1.Controls.Add(this.panel5, 3, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -220,6 +221,22 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1164, 345);
             this.tableLayoutPanel1.TabIndex = 1;
+            // 
+            // ButtonMergeAndSort
+            // 
+            this.ButtonMergeAndSort.AutoSize = true;
+            this.ButtonMergeAndSort.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel1.SetColumnSpan(this.ButtonMergeAndSort, 4);
+            this.ButtonMergeAndSort.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ButtonMergeAndSort.Enabled = false;
+            this.ButtonMergeAndSort.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonMergeAndSort.Location = new System.Drawing.Point(418, 227);
+            this.ButtonMergeAndSort.Name = "ButtonMergeAndSort";
+            this.ButtonMergeAndSort.Size = new System.Drawing.Size(326, 29);
+            this.ButtonMergeAndSort.TabIndex = 14;
+            this.ButtonMergeAndSort.Text = "Merge && Sort";
+            this.ButtonMergeAndSort.UseVisualStyleBackColor = true;
+            this.ButtonMergeAndSort.Click += new System.EventHandler(this.ButtonMergeAndSort_Click);
             // 
             // panel3
             // 
@@ -245,7 +262,7 @@
             this.buttonSelectionFileActionButton.TabIndex = 1;
             this.buttonSelectionFileActionButton.Text = "Select File(s)";
             this.buttonSelectionFileActionButton.UseVisualStyleBackColor = true;
-            this.buttonSelectionFileActionButton.Click += new System.EventHandler(this.Button2_Click);
+            this.buttonSelectionFileActionButton.Click += new System.EventHandler(this.ButtonSelectionFile_Click);
             // 
             // textBox2
             // 
@@ -288,7 +305,7 @@
             this.buttonTargetFileActionButton.TabIndex = 1;
             this.buttonTargetFileActionButton.Text = "Select";
             this.buttonTargetFileActionButton.UseVisualStyleBackColor = true;
-            this.buttonTargetFileActionButton.Click += new System.EventHandler(this.Button1_Click);
+            this.buttonTargetFileActionButton.Click += new System.EventHandler(this.ButtonTargetFile_Click);
             // 
             // textBoxTargetFileFilename
             // 
@@ -335,35 +352,35 @@
             this.label1.Text = "Select Destination File";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // button3
+            // ButtonMerge
             // 
-            this.button3.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.button3, 4);
-            this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button3.Enabled = false;
-            this.button3.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button3.Location = new System.Drawing.Point(418, 227);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(326, 29);
-            this.button3.TabIndex = 4;
-            this.button3.Text = "Merge Worksheets";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.Button3_Click);
+            this.ButtonMerge.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.ButtonMerge, 2);
+            this.ButtonMerge.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ButtonMerge.Enabled = false;
+            this.ButtonMerge.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonMerge.Location = new System.Drawing.Point(418, 262);
+            this.ButtonMerge.Name = "ButtonMerge";
+            this.ButtonMerge.Size = new System.Drawing.Size(160, 29);
+            this.ButtonMerge.TabIndex = 4;
+            this.ButtonMerge.Text = "Merge";
+            this.ButtonMerge.UseVisualStyleBackColor = true;
+            this.ButtonMerge.Click += new System.EventHandler(this.ButtonMerge_Click);
             // 
-            // button4
+            // ButtonSort
             // 
-            this.button4.AutoSize = true;
-            this.tableLayoutPanel1.SetColumnSpan(this.button4, 2);
-            this.button4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button4.Enabled = false;
-            this.button4.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button4.Location = new System.Drawing.Point(501, 262);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(160, 29);
-            this.button4.TabIndex = 5;
-            this.button4.Text = "Sort";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.Button4_Click);
+            this.ButtonSort.AutoSize = true;
+            this.tableLayoutPanel1.SetColumnSpan(this.ButtonSort, 2);
+            this.ButtonSort.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ButtonSort.Enabled = false;
+            this.ButtonSort.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonSort.Location = new System.Drawing.Point(584, 262);
+            this.ButtonSort.Name = "ButtonSort";
+            this.ButtonSort.Size = new System.Drawing.Size(160, 29);
+            this.ButtonSort.TabIndex = 5;
+            this.ButtonSort.Text = "Sort";
+            this.ButtonSort.UseVisualStyleBackColor = true;
+            this.ButtonSort.Click += new System.EventHandler(this.ButtonSort_Click);
             // 
             // panel4
             // 
@@ -428,8 +445,7 @@
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDropDownButtonFile,
-            this.toolStripSeparator3,
-            this.toolStripSeparator7});
+            this.toolStripSeparator3});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -499,11 +515,6 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
-            // 
             // FileSelectionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -545,8 +556,8 @@
     private System.Windows.Forms.Panel panel1;
     private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
     private System.Windows.Forms.ToolStrip toolStrip1;
-    private System.Windows.Forms.Button button3;
-    private System.Windows.Forms.Button button4;
+    private System.Windows.Forms.Button ButtonMerge;
+    private System.Windows.Forms.Button ButtonSort;
     private System.Windows.Forms.ToolStrip toolStrip2;
     private System.Windows.Forms.ToolStripLabel toolStripLabel2;
     private System.Windows.Forms.ToolStripLabel toolStripLabel1;
@@ -578,5 +589,5 @@
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     private System.Windows.Forms.ToolStripMenuItem loadLastFileToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-    private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+    private System.Windows.Forms.Button ButtonMergeAndSort;
 }

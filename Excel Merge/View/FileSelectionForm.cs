@@ -51,12 +51,13 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public void SetMergeButtonEnabled(bool enabled)
     {
-        button3.Enabled = enabled;
+        ButtonMerge.Enabled = enabled;
+        ButtonMergeAndSort.Enabled = enabled;
     }
 
     public void SetSortButtonEnabled(bool enabled)
     {
-        button4.Enabled = enabled;
+        ButtonSort.Enabled = enabled;
     }
 
     public void SetOpenFileButtonEnabled(bool enabled)
@@ -144,7 +145,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         toolStripLabel2.AutoSize = true;
     }
 
-    private void Button1_Click(object sender, EventArgs e)
+    private void ButtonTargetFile_Click(object sender, EventArgs e)
     {
         switch (presenter.TargetFileMode)
         {
@@ -157,12 +158,12 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         }
     }
 
-    private void Button2_Click(object sender, EventArgs e)
+    private void ButtonSelectionFile_Click(object sender, EventArgs e)
     {
         presenter.SelectTargetFiles();
     }
 
-    private async void Button3_Click(object sender, EventArgs e)
+    private async void ButtonMerge_Click(object sender, EventArgs e)
     {
         if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
@@ -172,9 +173,23 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         await presenter.RunOperationAsync(OperationRequested.Merge, presenter.MergeAction);
     }
 
-    private async void Button4_Click(object sender, EventArgs e)
+    private async void ButtonSort_Click(object sender, EventArgs e)
     {
         await presenter.RunOperationAsync(OperationRequested.Sort, presenter.SortAction);
+    }
+
+    private async void ButtonMergeAndSort_Click(object sender, EventArgs e)
+    {
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
+        {
+            await presenter.RunOperationAsync(
+                OperationRequested.CreateNewFile,
+                () => presenter.CreateNewFileAction());
+        }
+
+        await presenter.RunOperationAsync(
+            OperationRequested.MergeAndSort,
+            presenter.MergeAndSortAction);
     }
 
     private void ButtonReset_Click(object sender, EventArgs e)

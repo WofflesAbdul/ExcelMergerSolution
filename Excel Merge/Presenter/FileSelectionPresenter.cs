@@ -175,7 +175,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             }
 
             // Special handling after merge
-            if (op == OperationRequested.Merge)
+            if (op == OperationRequested.Merge || op == OperationRequested.MergeAndSort)
             {
                 model.ClearTargetFiles();
             }
@@ -206,34 +206,63 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         {
             var merger = new ExcelMerger();
 
-            // Pass a lambda to report progress
             merger.MergeFiles(
                 baseFile: model.ExistingBaseFilePath,
                 targets: model.TargetFilePaths,
-                skipNextRevision: Settings.Default.SkipNextRevision,
                 reportProgress: percent => view.SetProgress(percent)
             );
+        });
+    }
 
-            ExcelFileCreator.RemovePlaceholderSheets(model.ExistingBaseFilePath);
+    public Task MergeAndSortAction()
+    {
+        return Task.Run(() =>
+        {
+            var merger = new ExcelMerger();
+
+            merger.MergeAndSortFiles(
+                baseFile: model.ExistingBaseFilePath,
+                targets: model.TargetFilePaths.ToList(),
+                reportProgress: percent => view.SetProgress(percent)
+            );
         });
     }
 
     public async Task SortAction()
     {
         progressAnimationCts = new CancellationTokenSource();
-        var animationTask = view.AnimateProgressBarAsync(20, 200, progressAnimationCts.Token);
+        var animationTask = view.AnimateProgressBarAsync(
+            20,
+            200,
+            progressAnimationCts.Token
+        );
 
-        var sorterTask = Task.Run(() =>
+        try
         {
-            var sorter = new FunctionalTestSorter();
-            sorter.SortSheets(
-                filePath: model.ExistingBaseFilePath, 
-                skipNextRevision: Settings.Default.SkipNextRevision);
-        });
+            await Task.Run(() =>
+            {
+                var sorter = new FunctionalTestSorter();
+                sorter.SortSheets(filePath: model.ExistingBaseFilePath);
+            });
 
-        await Task.WhenAll(sorterTask, animationTask);
-        view.SetProgress(100);
-        progressAnimationCts.Cancel();
+            view.SetProgress(100);
+        }
+        finally
+        {
+            progressAnimationCts.Cancel();
+
+            try
+            {
+                await animationTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when the progress animation is cancelled.
+            }
+
+            progressAnimationCts.Dispose();
+            progressAnimationCts = null;
+        }
     }
 
     public Task CreateNewFileAction()
