@@ -1,13 +1,99 @@
-﻿Imports System.Runtime.InteropServices
+﻿
+Imports System.Runtime.InteropServices
+Imports System.Threading
 Imports Microsoft.Office.Interop
 
 Public Class FunctionalTestSorter
 
+    <ComImport>
+    <Guid("00000016-0000-0000-C000-000000000046")>
+    <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
+    Private Interface IMessageFilter
+        <PreserveSig>
+        Function HandleInComingCall(
+            callType As Integer,
+            callerTask As IntPtr,
+            tickCount As Integer,
+            interfaceInfo As IntPtr) As Integer
+
+        <PreserveSig>
+        Function RetryRejectedCall(
+            calleeTask As IntPtr,
+            tickCount As Integer,
+            rejectType As Integer) As Integer
+
+        <PreserveSig>
+        Function MessagePending(
+            calleeTask As IntPtr,
+            tickCount As Integer,
+            pendingType As Integer) As Integer
+    End Interface
+
+    Private Class ExcelMessageFilter
+        Implements IMessageFilter
+
+        Public Function HandleInComingCall(
+            callType As Integer,
+            callerTask As IntPtr,
+            tickCount As Integer,
+            interfaceInfo As IntPtr) As Integer _
+            Implements IMessageFilter.HandleInComingCall
+
+            Return 0
+        End Function
+
+        Public Function RetryRejectedCall(
+            calleeTask As IntPtr,
+            tickCount As Integer,
+            rejectType As Integer) As Integer _
+            Implements IMessageFilter.RetryRejectedCall
+
+            Const SERVERCALL_RETRYLATER As Integer = 2
+
+            If rejectType = SERVERCALL_RETRYLATER AndAlso tickCount < 10000 Then
+                Return 250
+            End If
+
+            Return -1
+        End Function
+
+        Public Function MessagePending(
+            calleeTask As IntPtr,
+            tickCount As Integer,
+            pendingType As Integer) As Integer _
+            Implements IMessageFilter.MessagePending
+
+            Return 2
+        End Function
+    End Class
+
+    <DllImport("ole32.dll")>
+    Private Shared Function CoRegisterMessageFilter(
+        newFilter As IMessageFilter,
+        ByRef oldFilter As IMessageFilter) As Integer
+    End Function
+
     Public Sub SortSheets(filePath As String)
+        If Thread.CurrentThread.GetApartmentState() <> ApartmentState.STA Then
+            Throw New InvalidOperationException(
+                "Excel sorting must run on an STA thread.")
+        End If
+
         Dim excelApp As Excel.Application = Nothing
         Dim wb As Excel.Workbook = Nothing
+        Dim previousFilter As IMessageFilter = Nothing
+        Dim filterRegistered As Boolean = False
 
         Try
+            Dim filter As IMessageFilter = New ExcelMessageFilter()
+            Dim hr As Integer = CoRegisterMessageFilter(filter, previousFilter)
+
+            If hr < 0 Then
+                Marshal.ThrowExceptionForHR(hr)
+            End If
+
+            filterRegistered = True
+
             excelApp = New Excel.Application()
             wb = excelApp.Workbooks.Open(filePath)
 
@@ -35,6 +121,11 @@ Public Class FunctionalTestSorter
                 End Try
 
                 ReleaseComObject(excelApp)
+            End If
+
+            If filterRegistered Then
+                Dim ignoredFilter As IMessageFilter = Nothing
+                CoRegisterMessageFilter(previousFilter, ignoredFilter)
             End If
         End Try
     End Sub
@@ -131,7 +222,6 @@ Public Class FunctionalTestSorter
                 Try
                     firstSheet = CType(sheets.Item(1), Excel.Worksheet)
 
-                    ' Ensure the first sorted worksheet is at the front.
                     If Not String.Equals(
                         firstSheet.Name,
                         sortedSheets(0).OriginalName,
@@ -144,7 +234,6 @@ Public Class FunctionalTestSorter
                     ReleaseComObject(firstSheet)
                 End Try
 
-                ' Position each subsequent worksheet after its predecessor.
                 For i As Integer = 1 To sortedSheets.Count - 1
                     sortedSheets(i).Worksheet.Move(
                         After:=sortedSheets(i - 1).Worksheet)
@@ -155,7 +244,6 @@ Public Class FunctionalTestSorter
             Throw New ApplicationException($"Sort failed: {ex.Message}", ex)
 
         Finally
-            ' Release each worksheet reference retained by the sorting list.
             For Each sheetInfo In sheetInfoList
                 ReleaseComObject(sheetInfo.Worksheet)
             Next

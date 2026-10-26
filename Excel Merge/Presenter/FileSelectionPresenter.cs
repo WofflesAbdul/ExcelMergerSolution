@@ -202,29 +202,27 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     public Task MergeAction()
     {
-        return Task.Run(() =>
+        return RunOnStaThreadAsync(() =>
         {
             var merger = new ExcelMerger();
 
             merger.MergeFiles(
                 baseFile: model.ExistingBaseFilePath,
-                targets: model.TargetFilePaths,
-                reportProgress: percent => view.SetProgress(percent)
-            );
+                targets: model.TargetFilePaths.ToList(),
+                reportProgress: percent => view.SetProgress(percent));
         });
     }
 
     public Task MergeAndSortAction()
     {
-        return Task.Run(() =>
+        return RunOnStaThreadAsync(() =>
         {
             var merger = new ExcelMerger();
 
             merger.MergeAndSortFiles(
                 baseFile: model.ExistingBaseFilePath,
                 targets: model.TargetFilePaths.ToList(),
-                reportProgress: percent => view.SetProgress(percent)
-            );
+                reportProgress: percent => view.SetProgress(percent));
         });
     }
 
@@ -234,12 +232,11 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         var animationTask = view.AnimateProgressBarAsync(
             20,
             200,
-            progressAnimationCts.Token
-        );
+            progressAnimationCts.Token);
 
         try
         {
-            await Task.Run(() =>
+            await RunOnStaThreadAsync(() =>
             {
                 var sorter = new FunctionalTestSorter();
                 sorter.SortSheets(filePath: model.ExistingBaseFilePath);
@@ -267,14 +264,14 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     public Task CreateNewFileAction()
     {
-        return Task.Run(() =>
+        return RunOnStaThreadAsync(() =>
         {
-            string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
+            string createdFilePath = ExcelFileCreator.CreateNewExcel(
+                directoryPath: model.DirectoryPath,
+                fileName: model.NewFileName);
 
-            // Marshal UI updates to the UI thread safely
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
 
-            // Reset new file info
             model.NewFileName = null;
             model.DirectoryPath = null;
             model.ExistingBaseFilePath = createdFilePath;
@@ -304,6 +301,30 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
     }
 
+    private static Task RunOnStaThreadAsync(Action action)
+    {
+        var completion = new TaskCompletionSource<object>();
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                action();
+                completion.SetResult(null);
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+
+        thread.IsBackground = true;
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        return completion.Task;
+    }
+
     private void UpdateView(ModelStateChangedEventArgs e)
     {
         view.DisplayFileName(TargetFileMode == TargetFileMode.ExistingFile ? Path.GetFileName(e.ExistingBaseFilePath) : e.NewFileName);
@@ -324,11 +345,18 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
         while (current != null)
         {
-            messages.Add($"Level {level}: {current.Message}");
+            messages.Add(
+                $"Level {level}: {current.GetType().FullName}\n" +
+                $"Message: {current.Message}\n" +
+                $"HRESULT: 0x{current.HResult:X8}\n" +
+                $"Stack Trace:\n{current.StackTrace}");
+
             current = current.InnerException;
             level++;
         }
 
-        return string.Join(Environment.NewLine + Environment.NewLine, messages);
+        return string.Join(
+            Environment.NewLine + Environment.NewLine,
+            messages);
     }
 }
