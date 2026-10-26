@@ -66,6 +66,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ExcelHelper\ExcelHelper.vb" />
     <Compile Include="Creators\ExcelFileCreator.vb" />
     <Compile Include="Core\ExcelMerger.vb" />
     <Compile Include="Core\ExcelSorter.vb" />

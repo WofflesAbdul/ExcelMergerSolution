@@ -1,76 +1,158 @@
-﻿Imports System.Runtime.InteropServices
+﻿Imports System.Threading
 Imports Microsoft.Office.Interop
 
 Public Class ExcelMerger
 
-    Public Sub MergeFiles(baseFile As String, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing)
+    Public Sub MergeFiles(baseFile As String, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing)
+        If Thread.CurrentThread.GetApartmentState() <> ApartmentState.STA Then
+            Throw New InvalidOperationException("Excel merging must run on an STA thread.")
+        End If
+
         Dim excelApp As Excel.Application = Nothing
         Dim destWB As Excel.Workbook = Nothing
+        Dim messageFilter As ExcelHelper.ExcelMessageFilterScope = Nothing
 
         Try
+            messageFilter = New ExcelHelper.ExcelMessageFilterScope()
+
+            reportStatus?.Invoke("Opening workbook...")
+            reportProgress?.Invoke(0)
+
             excelApp = New Excel.Application()
             excelApp.DisplayAlerts = False
             destWB = excelApp.Workbooks.Open(baseFile)
 
-            MergeSheets(excelApp, destWB, targets, reportProgress)
+            reportProgress?.Invoke(5)
+            reportStatus?.Invoke("Merging files...")
+
+            MergeSheets(excelApp, destWB, targets, reportProgress, 5, 85)
             ExcelFileCreator.RemovePlaceholderSheets(destWB)
 
+            reportStatus?.Invoke("Resetting worksheet cursors...")
+            ExcelHelper.ResetWorksheetCursors(destWB, reportProgress, 85, 94)
+
+            reportProgress?.Invoke(94)
+            reportStatus?.Invoke("Saving workbook...")
             destWB.Save()
+
+            reportStatus?.Invoke("Closing workbook...")
+            reportProgress?.Invoke(97)
+            destWB.Close(SaveChanges:=False)
+            ExcelHelper.ReleaseComObject(destWB)
+            destWB = Nothing
+
+            excelApp.Quit()
+            ExcelHelper.ReleaseComObject(excelApp)
+            excelApp = Nothing
+
+            reportProgress?.Invoke(100)
 
         Catch ex As Exception
             Throw New ApplicationException($"Merge failed: {ex.Message}", ex)
 
         Finally
             If destWB IsNot Nothing Then
-                destWB.Close(SaveChanges:=False)
-                ReleaseComObject(destWB)
+                Try
+                    destWB.Close(SaveChanges:=False)
+                Catch
+                End Try
+
+                ExcelHelper.ReleaseComObject(destWB)
             End If
 
             If excelApp IsNot Nothing Then
-                excelApp.Quit()
-                ReleaseComObject(excelApp)
+                Try
+                    excelApp.Quit()
+                Catch
+                End Try
+
+                ExcelHelper.ReleaseComObject(excelApp)
+            End If
+
+            If messageFilter IsNot Nothing Then
+                messageFilter.Dispose()
             End If
         End Try
     End Sub
 
-    Public Sub MergeAndSortFiles(baseFile As String, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing)
+    Public Sub MergeAndSortFiles(baseFile As String, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing)
+        If Thread.CurrentThread.GetApartmentState() <> ApartmentState.STA Then
+            Throw New InvalidOperationException("Excel merging must run on an STA thread.")
+        End If
+
         Dim excelApp As Excel.Application = Nothing
         Dim destWB As Excel.Workbook = Nothing
+        Dim messageFilter As ExcelHelper.ExcelMessageFilterScope = Nothing
 
         Try
+            messageFilter = New ExcelHelper.ExcelMessageFilterScope()
+
+            reportStatus?.Invoke("Opening workbook...")
+            reportProgress?.Invoke(0)
+
             excelApp = New Excel.Application()
             excelApp.DisplayAlerts = False
             destWB = excelApp.Workbooks.Open(baseFile)
 
-            ' Merge worksheets into the existing destination workbook.
-            MergeSheets(excelApp, destWB, targets, reportProgress)
+            reportProgress?.Invoke(5)
+            reportStatus?.Invoke("Merging files...")
 
-            ' Remove placeholders without reopening the destination workbook.
+            MergeSheets(excelApp, destWB, targets, reportProgress, 5, 40)
             ExcelFileCreator.RemovePlaceholderSheets(destWB)
 
-            ' Sort worksheets in the same workbook session.
-            Dim sorter As New FunctionalTestSorter()
-            sorter.SortSheets(destWB)
+            reportStatus?.Invoke("Sorting worksheets...")
 
+            Dim sorter As New FunctionalTestSorter()
+            sorter.SortSheets(destWB, reportProgress, reportStatus, progressStart:=40, progressEnd:=80)
+
+            reportStatus?.Invoke("Resetting worksheet cursors...")
+            ExcelHelper.ResetWorksheetCursors(destWB, reportProgress, 80, 94)
+
+            reportProgress?.Invoke(94)
+            reportStatus?.Invoke("Saving workbook...")
             destWB.Save()
+
+            reportStatus?.Invoke("Closing workbook...")
+            reportProgress?.Invoke(97)
+            destWB.Close(SaveChanges:=False)
+            ExcelHelper.ReleaseComObject(destWB)
+            destWB = Nothing
+
+            excelApp.Quit()
+            ExcelHelper.ReleaseComObject(excelApp)
+            excelApp = Nothing
+
+            reportProgress?.Invoke(100)
 
         Catch ex As Exception
             Throw New ApplicationException($"Merge and sort failed: {ex.Message}", ex)
 
         Finally
             If destWB IsNot Nothing Then
-                destWB.Close(SaveChanges:=False)
-                ReleaseComObject(destWB)
+                Try
+                    destWB.Close(SaveChanges:=False)
+                Catch
+                End Try
+
+                ExcelHelper.ReleaseComObject(destWB)
             End If
 
             If excelApp IsNot Nothing Then
-                excelApp.Quit()
-                ReleaseComObject(excelApp)
+                Try
+                    excelApp.Quit()
+                Catch
+                End Try
+
+                ExcelHelper.ReleaseComObject(excelApp)
+            End If
+
+            If messageFilter IsNot Nothing Then
+                messageFilter.Dispose()
             End If
         End Try
     End Sub
 
-    Public Sub MergeSheets(excelApp As Excel.Application, destWB As Excel.Workbook, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing)
+    Public Sub MergeSheets(excelApp As Excel.Application, destWB As Excel.Workbook, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing, Optional progressStart As Integer = 0, Optional progressEnd As Integer = 100)
         If excelApp Is Nothing Then Throw New ArgumentNullException(NameOf(excelApp))
         If destWB Is Nothing Then Throw New ArgumentNullException(NameOf(destWB))
         If targets Is Nothing Then Throw New ArgumentNullException(NameOf(targets))
@@ -78,6 +160,11 @@ Public Class ExcelMerger
         Dim targetFiles As List(Of String) = targets.ToList()
         Dim total As Integer = targetFiles.Count
         Dim index As Integer = 0
+
+        If total = 0 Then
+            reportProgress?.Invoke(progressEnd)
+            Return
+        End If
 
         For Each filePath As String In targetFiles
             Dim sourceWB As Excel.Workbook = Nothing
@@ -97,22 +184,27 @@ Public Class ExcelMerger
                 copiedSheet = CType(sheets(sheets.Count), Excel.Worksheet)
                 copiedSheet.Name = newSheetName
 
+            Catch ex As Exception
+                Throw New ApplicationException($"Failed to merge target file '{filePath}': {ex.Message}", ex)
+
             Finally
                 If sourceWB IsNot Nothing Then
-                    sourceWB.Close(SaveChanges:=False)
+                    Try
+                        sourceWB.Close(SaveChanges:=False)
+                    Catch
+                    End Try
                 End If
 
-                ReleaseComObject(copiedSheet)
-                ReleaseComObject(wsToCopy)
-                ReleaseComObject(sheets)
-                ReleaseComObject(sourceWB)
+                ExcelHelper.ReleaseComObject(copiedSheet)
+                ExcelHelper.ReleaseComObject(wsToCopy)
+                ExcelHelper.ReleaseComObject(sheets)
+                ExcelHelper.ReleaseComObject(sourceWB)
             End Try
 
             index += 1
 
-            If total > 0 Then
-                reportProgress?.Invoke(CInt(index * 100 / total))
-            End If
+            Dim percent As Integer = progressStart + CInt(Math.Floor(index * (progressEnd - progressStart) / CDbl(total)))
+            reportProgress?.Invoke(percent)
         Next
     End Sub
 
@@ -146,22 +238,14 @@ Public Class ExcelMerger
                         Return True
                     End If
                 Finally
-                    ReleaseComObject(ws)
+                    ExcelHelper.ReleaseComObject(ws)
                 End Try
             Next
 
             Return False
         Finally
-            ReleaseComObject(sheets)
+            ExcelHelper.ReleaseComObject(sheets)
         End Try
     End Function
 
-    Private Sub ReleaseComObject(obj As Object)
-        Try
-            If obj IsNot Nothing AndAlso Marshal.IsComObject(obj) Then
-                Marshal.ReleaseComObject(obj)
-            End If
-        Catch
-        End Try
-    End Sub
 End Class

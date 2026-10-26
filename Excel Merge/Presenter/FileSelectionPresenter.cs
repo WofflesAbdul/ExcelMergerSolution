@@ -209,7 +209,8 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             merger.MergeFiles(
                 baseFile: model.ExistingBaseFilePath,
                 targets: model.TargetFilePaths.ToList(),
-                reportProgress: percent => view.SetProgress(percent));
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
@@ -222,44 +223,23 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             merger.MergeAndSortFiles(
                 baseFile: model.ExistingBaseFilePath,
                 targets: model.TargetFilePaths.ToList(),
-                reportProgress: percent => view.SetProgress(percent));
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
-    public async Task SortAction()
+
+    public Task SortAction()
     {
-        progressAnimationCts = new CancellationTokenSource();
-        var animationTask = view.AnimateProgressBarAsync(
-            20,
-            200,
-            progressAnimationCts.Token);
-
-        try
+        return RunOnStaThreadAsync(() =>
         {
-            await RunOnStaThreadAsync(() =>
-            {
-                var sorter = new FunctionalTestSorter();
-                sorter.SortSheets(filePath: model.ExistingBaseFilePath);
-            });
+            var sorter = new FunctionalTestSorter();
 
-            view.SetProgress(100);
-        }
-        finally
-        {
-            progressAnimationCts.Cancel();
-
-            try
-            {
-                await animationTask;
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when the progress animation is cancelled.
-            }
-
-            progressAnimationCts.Dispose();
-            progressAnimationCts = null;
-        }
+            sorter.SortSheets(
+                filePath: model.ExistingBaseFilePath,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
     }
 
     public Task CreateNewFileAction()
@@ -293,7 +273,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 model.ExistingBaseFilePath = lastSavedFile;
                 break;
 
-                /// <remarks> DO NOT USE, unless placeholder font is reverted to default upon use. </remarks>
+            /// <remarks> DO NOT USE, unless placeholder font is reverted to default upon use. </remarks>
             case TargetFileMode.NewFile:
                 // model.NewFileName = Path.GetFileName(lastSavedFile);
                 model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
