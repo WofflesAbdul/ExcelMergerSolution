@@ -1,36 +1,24 @@
-﻿Imports Microsoft.Office.Interop
-Imports System.IO
+﻿Imports System.IO
+Imports System.Runtime.InteropServices
+Imports Microsoft.Office.Interop
 
 Public NotInheritable Class ExcelFileCreator
 
-    ' Prevent instantiation
     Private Sub New()
     End Sub
 
-    ' Predefined placeholder sheet names
     Private Shared ReadOnly PlaceholderNames As String() = {"Placeholder", "Sheet1", "Sheet2", "Sheet3"}
 
-    ''' <summary>
-    ''' Creates a new Excel workbook in the specified directory with the specified filename.
-    ''' Returns the full path of the created workbook.
-    ''' </summary>
-    ''' <param name="directoryPath">Directory to create the workbook in.</param>
-    ''' <param name="fileName">Filename including extension, e.g., "MyWorkbook.xlsx"</param>
-    ''' <returns>Full file path of the created workbook.</returns>
-    ''' <exception cref="ArgumentException">If directoryPath or fileName is null/empty.</exception>
-    ''' <exception cref="ApplicationException">If workbook creation fails.</exception>
     Public Shared Function CreateNewExcel(directoryPath As String, fileName As String) As String
         If String.IsNullOrWhiteSpace(directoryPath) Then Throw New ArgumentException("Directory path cannot be empty.", NameOf(directoryPath))
         If String.IsNullOrWhiteSpace(fileName) Then Throw New ArgumentException("Filename cannot be empty.", NameOf(fileName))
 
-        ' Ensure filename has .xlsx extension
-        If Path.GetExtension(fileName).ToLower() <> ".xlsx" Then
+        If Path.GetExtension(fileName).ToLowerInvariant() <> ".xlsx" Then
             fileName &= ".xlsx"
         End If
 
         Dim fullPath As String = Path.Combine(directoryPath, fileName)
 
-        ' Ensure folder exists
         If Not Directory.Exists(directoryPath) Then
             Directory.CreateDirectory(directoryPath)
         End If
@@ -44,9 +32,10 @@ Public NotInheritable Class ExcelFileCreator
 
             wb = excelApp.Workbooks.Add()
             wb.SaveAs(fullPath)
-            wb.Close(SaveChanges:=True)
+            wb.Close(SaveChanges:=False)
+            ReleaseComObject(wb)
+            wb = Nothing
 
-            ' Verify file exists
             If Not File.Exists(fullPath) Then
                 Throw New ApplicationException($"Failed to create Excel file at {fullPath}")
             End If
@@ -54,18 +43,18 @@ Public NotInheritable Class ExcelFileCreator
             Return fullPath
 
         Finally
-            If wb IsNot Nothing Then MarshalReleaseComObject(wb)
+            If wb IsNot Nothing Then
+                wb.Close(SaveChanges:=False)
+                ReleaseComObject(wb)
+            End If
+
             If excelApp IsNot Nothing Then
                 excelApp.Quit()
-                MarshalReleaseComObject(excelApp)
+                ReleaseComObject(excelApp)
             End If
         End Try
     End Function
 
-    ''' <summary>
-    ''' Removes placeholder sheets if they exist in the workbook.
-    ''' </summary>
-    ''' <param name="fullPath">Full file path including filename.xlsx</param>
     Public Shared Sub RemovePlaceholderSheets(fullPath As String)
         If Not File.Exists(fullPath) Then Return
 
@@ -77,39 +66,60 @@ Public NotInheritable Class ExcelFileCreator
             excelApp.DisplayAlerts = False
             wb = excelApp.Workbooks.Open(fullPath)
 
-            ' Iterate backwards to safely delete
-            For i As Integer = wb.Sheets.Count To 1 Step -1
-                Dim ws As Excel.Worksheet = CType(wb.Sheets(i), Excel.Worksheet)
-                If PlaceholderNames.Contains(ws.Name) Then
-                    ws.Delete()
-                End If
-                MarshalReleaseComObject(ws)
-            Next
+            RemovePlaceholderSheets(wb)
 
             wb.Save()
 
-        Catch
-            ' Optionally log error
+        Catch ex As Exception
+            Throw New ApplicationException($"Failed to remove placeholder sheets: {ex.Message}", ex)
 
         Finally
-            If wb IsNot Nothing Then MarshalReleaseComObject(wb)
+            If wb IsNot Nothing Then
+                wb.Close(SaveChanges:=False)
+                ReleaseComObject(wb)
+            End If
+
             If excelApp IsNot Nothing Then
                 excelApp.Quit()
-                MarshalReleaseComObject(excelApp)
+                ReleaseComObject(excelApp)
             End If
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Helper to release COM object
-    ''' </summary>
-    Private Shared Sub MarshalReleaseComObject(obj As Object)
+    Public Shared Sub RemovePlaceholderSheets(wb As Excel.Workbook)
+        If wb Is Nothing Then Throw New ArgumentNullException(NameOf(wb))
+
+        Dim sheets As Excel.Sheets = Nothing
+
         Try
-            If obj IsNot Nothing Then
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(obj)
-            End If
+            sheets = wb.Sheets
+
+            For i As Integer = sheets.Count To 1 Step -1
+                Dim ws As Excel.Worksheet = Nothing
+
+                Try
+                    ws = CType(sheets(i), Excel.Worksheet)
+
+                    If PlaceholderNames.Contains(ws.Name, StringComparer.OrdinalIgnoreCase) Then
+                        ws.Delete()
+                    End If
+
+                Finally
+                    ReleaseComObject(ws)
+                End Try
+            Next
+
         Finally
-            obj = Nothing
+            ReleaseComObject(sheets)
+        End Try
+    End Sub
+
+    Private Shared Sub ReleaseComObject(obj As Object)
+        Try
+            If obj IsNot Nothing AndAlso Marshal.IsComObject(obj) Then
+                Marshal.ReleaseComObject(obj)
+            End If
+        Catch
         End Try
     End Sub
 

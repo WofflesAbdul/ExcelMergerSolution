@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 
 public static class OperationRegistry
 {
@@ -16,6 +17,13 @@ public static class OperationRegistry
         "Error: Unable to perform Sort action!"
     );
 
+    public static readonly OperationInfo MergeAndSort = new OperationInfo(
+        OperationRequested.MergeAndSort,
+        "Status: Merging and sorting in process...",
+        "Completed: Merge and Sort action is completed!",
+        "Error: Unable to perform Merge and Sort action!"
+    );
+
     public static readonly OperationInfo CreateNewFile = new OperationInfo(
         OperationRequested.CreateNewFile,
         "Status: Creating new file in process...",
@@ -29,6 +37,7 @@ public static class OperationRegistry
         {
             case OperationRequested.Merge: return Merge;
             case OperationRequested.Sort: return Sort;
+            case OperationRequested.MergeAndSort: return MergeAndSort;
             case OperationRequested.CreateNewFile: return CreateNewFile;
             default: throw new ArgumentOutOfRangeException(nameof(requested), requested, null);
         }

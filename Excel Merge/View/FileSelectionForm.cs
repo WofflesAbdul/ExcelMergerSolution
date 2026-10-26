@@ -34,40 +34,23 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public event EventHandler<TargetFileMode> TargetFileModeChanged;
 
-    public void DisplayFileName(string fileName)
-    {
-        textBoxTargetFileFilename.Text = fileName;
-    }
+    public void DisplayFileName(string fileName) => textBoxTargetFileFilename.Text = fileName;
 
-    public void DisplayDirectoryPath(string directoryPath)
-    {
-        label4.Text = directoryPath;
-    }
+    public void DisplayDirectoryPath(string directoryPath) => label4.Text = directoryPath;
 
-    public void DisplayTargetFilePaths(IEnumerable<string> targetFileNames)
-    {
-        textBox2.Text = string.Join(", ", targetFileNames);
-    }
+    public void DisplayTargetFilePaths(IEnumerable<string> targetFileNames) => textBox2.Text = string.Join(", ", targetFileNames);
 
     public void SetMergeButtonEnabled(bool enabled)
     {
-        button3.Enabled = enabled;
+        ButtonMerge.Enabled = enabled;
+        ButtonMergeAndSort.Enabled = enabled;
     }
 
-    public void SetSortButtonEnabled(bool enabled)
-    {
-        button4.Enabled = enabled;
-    }
+    public void SetSortButtonEnabled(bool enabled) => ButtonSort.Enabled = enabled;
 
-    public void SetOpenFileButtonEnabled(bool enabled)
-    {
-        openFileToolStripMenuItem.Enabled = enabled;
-    }
+    public void SetOpenFileButtonEnabled(bool enabled) => openFileToolStripMenuItem.Enabled = enabled;
 
-    public void SetOpenFolderButtonEnabled(bool enabled)
-    {
-        openContainingFolderToolStripMenuItem.Enabled = enabled;
-    }
+    public void SetOpenFolderButtonEnabled(bool enabled) => openContainingFolderToolStripMenuItem.Enabled = enabled;
 
     public void LockControls(bool enable)
     {
@@ -93,10 +76,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         });
     }
 
-    public void SetOngoingStatus(string message)
-    {
-        toolStripLabel4.Text = message;
-    }
+    public void SetOngoingStatus(string message) => toolStripLabel4.Text = message;
 
     public void SetCompletionStatus(string message, bool isError = false)
     {
@@ -131,10 +111,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         }
     }
 
-    public void NewFileCreated()
-    {
-        rbUseExistingFile.Checked = true;
-    }
+    public void NewFileCreated() => rbUseExistingFile.Checked = true;
 
     public void ShowError(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -144,53 +121,44 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         toolStripLabel2.AutoSize = true;
     }
 
-    private void Button1_Click(object sender, EventArgs e)
+    private void ButtonTargetFile_Click(object sender, EventArgs e)
     {
         switch (presenter.TargetFileMode)
         {
-            case TargetFileMode.ExistingFile:
-                presenter.SelectBaseFile();
-                break;
-            case TargetFileMode.NewFile:
-                presenter.SelectDirectoryPath();
-                break;
+            case TargetFileMode.ExistingFile: presenter.SelectBaseFile(); break;
+            case TargetFileMode.NewFile: presenter.SelectDirectoryPath(); break;
         }
     }
 
-    private void Button2_Click(object sender, EventArgs e)
-    {
-        presenter.SelectTargetFiles();
-    }
+    private void ButtonSelectionFile_Click(object sender, EventArgs e) => presenter.SelectTargetFiles();
 
-    private async void Button3_Click(object sender, EventArgs e)
+    private async void ButtonMerge_Click(object sender, EventArgs e)
     {
         if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
-            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction(useTemplate: checkBoxAddReportTemplate.Checked));
+            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction());
         }
 
         await presenter.RunOperationAsync(OperationRequested.Merge, presenter.MergeAction);
     }
 
-    private async void Button4_Click(object sender, EventArgs e)
+    private async void ButtonSort_Click(object sender, EventArgs e) => await presenter.RunOperationAsync(OperationRequested.Sort, presenter.SortAction);
+
+    private async void ButtonMergeAndSort_Click(object sender, EventArgs e)
     {
-        await presenter.RunOperationAsync(OperationRequested.Sort, presenter.SortAction);
+        if (presenter.TargetFileMode == TargetFileMode.NewFile)
+        {
+            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction());
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.MergeAndSort, presenter.MergeAndSortAction);
     }
 
-    private void ButtonReset_Click(object sender, EventArgs e)
-    {
-        ResetRequested?.Invoke(this, EventArgs.Empty);
-    }
+    private void ButtonReset_Click(object sender, EventArgs e) => ResetRequested?.Invoke(this, EventArgs.Empty);
 
-    private void ButtonOpenFile_Click(object sender, EventArgs e)
-    {
-        OpenFileClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void ButtonOpenFile_Click(object sender, EventArgs e) => OpenFileClicked?.Invoke(this, EventArgs.Empty);
 
-    private void ButtonOpenFolder_Click(object sender, EventArgs e)
-    {
-        OpenFolderClicked?.Invoke(this, EventArgs.Empty);
-    }
+    private void ButtonOpenFolder_Click(object sender, EventArgs e) => OpenFolderClicked?.Invoke(this, EventArgs.Empty);
 
     private void TargetFileMode_CheckedChanged(object sender, EventArgs e)
     {
@@ -202,9 +170,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             textBoxTargetFileFilename.ForeColor = SystemColors.WindowText;
             textBoxTargetFileFilename.Font = new Font(textBoxTargetFileFilename.Font, FontStyle.Regular);
             buttonTargetFileActionButton.Text = "Select File";
-
-            checkBoxAddReportTemplate.Enabled = false;
-            checkBoxAddReportTemplate.Checked = false;
         }
         else if (rbCreateNewFile.Checked)
         {
@@ -213,8 +178,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             textBoxTargetFileFilename.ReadOnly = false;
             TextBoxTargetFileFilename_Leave(textBoxTargetFileFilename, EventArgs.Empty);
             buttonTargetFileActionButton.Text = "Select Folder";
-
-            checkBoxAddReportTemplate.Enabled = true;
         }
     }
 
@@ -252,14 +215,5 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         }
     }
 
-    private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        presenter.LoadLastFile();
-    }
-
-    private void ToolStripMenuItemSkipNextRevision_CheckedChanged(object sender, EventArgs e)
-    {
-        Settings.Default.SkipNextRevision = toolStripMenuItemSkipNextRevision.Checked;
-        Settings.Default.Save();
-    }
+    private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.LoadLastFile();
 }

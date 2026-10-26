@@ -175,7 +175,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             }
 
             // Special handling after merge
-            if (op == OperationRequested.Merge)
+            if (op == OperationRequested.Merge || op == OperationRequested.MergeAndSort)
             {
                 model.ClearTargetFiles();
             }
@@ -202,58 +202,56 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     public Task MergeAction()
     {
-        return Task.Run(() =>
+        return RunOnStaThreadAsync(() =>
         {
             var merger = new ExcelMerger();
 
-            // Pass a lambda to report progress
             merger.MergeFiles(
                 baseFile: model.ExistingBaseFilePath,
-                targets: model.TargetFilePaths,
-                skipNextRevision: Settings.Default.SkipNextRevision,
-                reportProgress: percent => view.SetProgress(percent)
-            );
-
-            ExcelFileCreator.RemovePlaceholderSheets(model.ExistingBaseFilePath);
+                targets: model.TargetFilePaths.ToList(),
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
-    public async Task SortAction()
+    public Task MergeAndSortAction()
     {
-        progressAnimationCts = new CancellationTokenSource();
-        var animationTask = view.AnimateProgressBarAsync(20, 200, progressAnimationCts.Token);
+        return RunOnStaThreadAsync(() =>
+        {
+            var merger = new ExcelMerger();
 
-        var sorterTask = Task.Run(() =>
+            merger.MergeAndSortFiles(
+                baseFile: model.ExistingBaseFilePath,
+                targets: model.TargetFilePaths.ToList(),
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
+
+
+    public Task SortAction()
+    {
+        return RunOnStaThreadAsync(() =>
         {
             var sorter = new FunctionalTestSorter();
-            sorter.SortSheets(
-                filePath: model.ExistingBaseFilePath, 
-                skipNextRevision: Settings.Default.SkipNextRevision);
-        });
 
-        await Task.WhenAll(sorterTask, animationTask);
-        view.SetProgress(100);
-        progressAnimationCts.Cancel();
+            sorter.SortSheets(
+                filePath: model.ExistingBaseFilePath,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
     }
 
-    public Task CreateNewFileAction(bool useTemplate)
+    public Task CreateNewFileAction()
     {
-        return Task.Run(() =>
+        return RunOnStaThreadAsync(() =>
         {
-            string createdFilePath;
-            if (useTemplate)
-            {
-                createdFilePath = ExcelFileFromTemplateCreator.CreateFromTemplate(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
-            }
-            else
-            {
-                createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
-            }
+            string createdFilePath = ExcelFileCreator.CreateNewExcel(
+                directoryPath: model.DirectoryPath,
+                fileName: model.NewFileName);
 
-            // Marshal UI updates to the UI thread safely
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
 
-            // Reset new file info
             model.NewFileName = null;
             model.DirectoryPath = null;
             model.ExistingBaseFilePath = createdFilePath;
@@ -275,12 +273,36 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 model.ExistingBaseFilePath = lastSavedFile;
                 break;
 
-                /// <remarks> DO NOT USE, unless placeholder font is reverted to default upon use. </remarks>
+            /// <remarks> DO NOT USE, unless placeholder font is reverted to default upon use. </remarks>
             case TargetFileMode.NewFile:
-                //    model.NewFileName = Path.GetFileName(lastSavedFile);
+                // model.NewFileName = Path.GetFileName(lastSavedFile);
                 model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
                 break;
         }
+    }
+
+    private static Task RunOnStaThreadAsync(Action action)
+    {
+        var completion = new TaskCompletionSource<object>();
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                action();
+                completion.SetResult(null);
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+
+        thread.IsBackground = true;
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        return completion.Task;
     }
 
     private void UpdateView(ModelStateChangedEventArgs e)
@@ -303,11 +325,18 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
         while (current != null)
         {
-            messages.Add($"Level {level}: {current.Message}");
+            messages.Add(
+                $"Level {level}: {current.GetType().FullName}\n" +
+                $"Message: {current.Message}\n" +
+                $"HRESULT: 0x{current.HResult:X8}\n" +
+                $"Stack Trace:\n{current.StackTrace}");
+
             current = current.InnerException;
             level++;
         }
 
-        return string.Join(Environment.NewLine + Environment.NewLine, messages);
+        return string.Join(
+            Environment.NewLine + Environment.NewLine,
+            messages);
     }
 }

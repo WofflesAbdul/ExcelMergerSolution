@@ -3,5 +3,6 @@
     None,
     Merge,
     Sort,
+    MergeAndSort,
     CreateNewFile,
 }

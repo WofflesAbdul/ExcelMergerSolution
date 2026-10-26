@@ -3,6 +3,7 @@
         "Cover Page",
         "Title",
         "Summary",
+        "Lookup",
         "Notes",
         "Observation Notes",
         "Observations"

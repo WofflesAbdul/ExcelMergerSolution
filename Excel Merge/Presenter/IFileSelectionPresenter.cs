@@ -29,7 +29,9 @@ public interface IFileSelectionPresenter
 
     Task SortAction();
 
-    Task CreateNewFileAction(bool useTemplate);
+    Task MergeAndSortAction();
+
+    Task CreateNewFileAction();
 
     void LoadLastFile();
 }
