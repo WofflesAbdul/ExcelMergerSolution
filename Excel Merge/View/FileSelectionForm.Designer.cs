@@ -52,7 +52,6 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.label4 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
-            this.checkBoxAddReportTemplate = new System.Windows.Forms.CheckBox();
             this.rbCreateNewFile = new System.Windows.Forms.RadioButton();
             this.rbUseExistingFile = new System.Windows.Forms.RadioButton();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -64,9 +63,7 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripDropDownButtonEdit = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripMenuItemSkipNextRevision = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -394,7 +391,6 @@
             // 
             this.panel5.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.panel5, 10);
-            this.panel5.Controls.Add(this.checkBoxAddReportTemplate);
             this.panel5.Controls.Add(this.rbCreateNewFile);
             this.panel5.Controls.Add(this.rbUseExistingFile);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -403,19 +399,6 @@
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(830, 24);
             this.panel5.TabIndex = 13;
-            // 
-            // checkBoxAddReportTemplate
-            // 
-            this.checkBoxAddReportTemplate.AutoSize = true;
-            this.checkBoxAddReportTemplate.Enabled = false;
-            this.checkBoxAddReportTemplate.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Bold);
-            this.checkBoxAddReportTemplate.Location = new System.Drawing.Point(190, 4);
-            this.checkBoxAddReportTemplate.Margin = new System.Windows.Forms.Padding(2);
-            this.checkBoxAddReportTemplate.Name = "checkBoxAddReportTemplate";
-            this.checkBoxAddReportTemplate.Size = new System.Drawing.Size(94, 18);
-            this.checkBoxAddReportTemplate.TabIndex = 2;
-            this.checkBoxAddReportTemplate.Text = "Add Template";
-            this.checkBoxAddReportTemplate.UseVisualStyleBackColor = true;
             // 
             // rbCreateNewFile
             // 
@@ -446,7 +429,6 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDropDownButtonFile,
             this.toolStripSeparator3,
-            this.toolStripDropDownButtonEdit,
             this.toolStripSeparator7});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
@@ -517,30 +499,10 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripDropDownButtonEdit
-            // 
-            this.toolStripDropDownButtonEdit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripDropDownButtonEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItemSkipNextRevision});
-            this.toolStripDropDownButtonEdit.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButtonEdit.Image")));
-            this.toolStripDropDownButtonEdit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripDropDownButtonEdit.Name = "toolStripDropDownButtonEdit";
-            this.toolStripDropDownButtonEdit.Size = new System.Drawing.Size(40, 22);
-            this.toolStripDropDownButtonEdit.Text = "Edit";
-            // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
-            // 
-            // toolStripMenuItemSkipNextRevision
-            // 
-            this.toolStripMenuItemSkipNextRevision.CheckOnClick = true;
-            this.toolStripMenuItemSkipNextRevision.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripMenuItemSkipNextRevision.Name = "toolStripMenuItemSkipNextRevision";
-            this.toolStripMenuItemSkipNextRevision.Size = new System.Drawing.Size(236, 22);
-            this.toolStripMenuItemSkipNextRevision.Text = "Skip Next Revision Assignment";
-            this.toolStripMenuItemSkipNextRevision.CheckedChanged += new System.EventHandler(this.ToolStripMenuItemSkipNextRevision_CheckedChanged);
             // 
             // FileSelectionForm
             // 
@@ -612,12 +574,9 @@
     private System.Windows.Forms.ToolStripLabel toolStripLabel4;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
     private System.Windows.Forms.ToolStripLabel toolStripLabel5;
-    private System.Windows.Forms.CheckBox checkBoxAddReportTemplate;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     private System.Windows.Forms.ToolStripMenuItem loadLastFileToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-    private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonEdit;
-    private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemSkipNextRevision;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
 }

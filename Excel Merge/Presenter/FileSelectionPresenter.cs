@@ -236,19 +236,11 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         progressAnimationCts.Cancel();
     }
 
-    public Task CreateNewFileAction(bool useTemplate)
+    public Task CreateNewFileAction()
     {
         return Task.Run(() =>
         {
-            string createdFilePath;
-            if (useTemplate)
-            {
-                createdFilePath = ExcelFileFromTemplateCreator.CreateFromTemplate(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
-            }
-            else
-            {
-                createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
-            }
+            string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
             // Marshal UI updates to the UI thread safely
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
@@ -277,7 +269,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
                 /// <remarks> DO NOT USE, unless placeholder font is reverted to default upon use. </remarks>
             case TargetFileMode.NewFile:
-                //    model.NewFileName = Path.GetFileName(lastSavedFile);
+                // model.NewFileName = Path.GetFileName(lastSavedFile);
                 model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
                 break;
         }

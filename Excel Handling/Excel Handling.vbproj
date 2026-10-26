@@ -66,24 +66,12 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Models\ResolvedTestMetadata.vb" />
-    <Compile Include="Data\Models\TestMapping\TestItem.vb" />
-    <Compile Include="Data\Models\TestMapping\TestItemRegistry.vb" />
-    <Compile Include="Data\Processor\TestMetadataProcessor.vb" />
-    <Compile Include="Data\Models\TestReportSheetInfo.vb" />
-    <Compile Include="Data\Models\CoverPageSheetInfo.vb" />
     <Compile Include="View\DialogPrompt\CoverPageRevisionEntryTablePromptDialog.Designer.vb">
       <DependentUpon>CoverPageRevisionEntryTablePromptDialog.vb</DependentUpon>
     </Compile>
     <Compile Include="View\DialogPrompt\CoverPageRevisionEntryTablePromptDialog.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Updaters\DvtReportSheetUpdater.vb" />
-    <Compile Include="Updaters\DvtReportSheetUpdater.CoverPage.vb" />
-    <Compile Include="Updaters\DvtReportSheetUpdater.Summary.vb" />
-    <Compile Include="Data\Models\WorkbookNamedData.vb" />
-    <Compile Include="Data\Processor\WorkbookNamedRangeCollector.vb" />
-    <Compile Include="Creators\ExcelFileFromTemplateCreator.vb" />
     <Compile Include="Creators\ExcelFileCreator.vb" />
     <Compile Include="Core\ExcelMerger.vb" />
     <Compile Include="Core\ExcelSorter.vb" />

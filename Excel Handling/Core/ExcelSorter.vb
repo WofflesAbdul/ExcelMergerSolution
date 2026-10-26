@@ -66,13 +66,6 @@ Public Class FunctionalTestSorter
 
             wb.Save()
 
-            Dim collector As New WorkbookNamedRangeCollector()
-            Dim data = collector.CollectFromOpenWorkbook(wb)
-            Dim resolved As ResolvedTestMetadata = TestMetadataProcessor.ResolveDominant(data.TestSheets)
-            Dim updater As New DvtReportSheetUpdater()
-            updater.UpdateSummarySheet(wb, resolved)
-            updater.UpdateCoverPageSheetFromOpenWorkbook(wb, resolved, skipNextRevision)
-
         Catch ex As Exception
             Throw New ApplicationException($"Sort failed: {ex.Message}", ex)
         Finally

@@ -29,7 +29,7 @@ public interface IFileSelectionPresenter
 
     Task SortAction();
 
-    Task CreateNewFileAction(bool useTemplate);
+    Task CreateNewFileAction();
 
     void LoadLastFile();
 }

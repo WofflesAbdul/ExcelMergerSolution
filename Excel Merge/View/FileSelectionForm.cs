@@ -166,7 +166,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     {
         if (presenter.TargetFileMode == TargetFileMode.NewFile)
         {
-            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction(useTemplate: checkBoxAddReportTemplate.Checked));
+            await presenter.RunOperationAsync(OperationRequested.CreateNewFile, () => presenter.CreateNewFileAction());
         }
 
         await presenter.RunOperationAsync(OperationRequested.Merge, presenter.MergeAction);
@@ -202,9 +202,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             textBoxTargetFileFilename.ForeColor = SystemColors.WindowText;
             textBoxTargetFileFilename.Font = new Font(textBoxTargetFileFilename.Font, FontStyle.Regular);
             buttonTargetFileActionButton.Text = "Select File";
-
-            checkBoxAddReportTemplate.Enabled = false;
-            checkBoxAddReportTemplate.Checked = false;
         }
         else if (rbCreateNewFile.Checked)
         {
@@ -213,8 +210,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             textBoxTargetFileFilename.ReadOnly = false;
             TextBoxTargetFileFilename_Leave(textBoxTargetFileFilename, EventArgs.Empty);
             buttonTargetFileActionButton.Text = "Select Folder";
-
-            checkBoxAddReportTemplate.Enabled = true;
         }
     }
 
@@ -255,11 +250,5 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e)
     {
         presenter.LoadLastFile();
-    }
-
-    private void ToolStripMenuItemSkipNextRevision_CheckedChanged(object sender, EventArgs e)
-    {
-        Settings.Default.SkipNextRevision = toolStripMenuItemSkipNextRevision.Checked;
-        Settings.Default.Save();
     }
 }
