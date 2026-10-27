@@ -35,5 +35,10 @@ public interface IFileSelectionPresenter
 
     void LoadLastFile();
 
+    /// <summary>
+    /// Adds the cover page from the report template to the selected workbook.
+    /// </summary>
+    Task AddCoverPageAction();
+
     void DownloadTemplateFile();
 }

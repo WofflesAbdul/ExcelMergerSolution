@@ -229,7 +229,6 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         });
     }
 
-
     public Task SortAction()
     {
         return RunOnStaThreadAsync(() =>
@@ -275,6 +274,20 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
                 break;
         }
+    }
+
+    public Task AddCoverPageAction()
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var templateHandler = new ExcelTemplateHandler();
+
+            templateHandler.AddCoverPage(
+                baseFile: model.ExistingBaseFilePath,
+                templateFile: Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx"),
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
     }
 
     public void DownloadTemplateFile()

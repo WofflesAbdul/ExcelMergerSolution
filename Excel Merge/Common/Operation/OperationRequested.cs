@@ -5,4 +5,9 @@
     Sort,
     MergeAndSort,
     CreateNewFile,
+    AddCoverPage,
+    AddSummaryPage,
+    MergeCoverPage,
+    MergeSummaryPage,
+    MergeTemplateFile,
 }

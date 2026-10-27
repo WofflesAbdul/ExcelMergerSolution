@@ -69,6 +69,7 @@
     <Compile Include="Core\ExcelHelper\ExcelHelper.vb" />
     <Compile Include="Core\ExcelFileCreator.vb" />
     <Compile Include="Core\ExcelMerger.vb" />
+    <Compile Include="Core\ExcelTemplateHandler.vb" />
     <Compile Include="Core\ExcelSorter.vb" />
     <Compile Include="Module\HeaderSequence.vb" />
     <Compile Include="Module\TemperatureSequence.vb" />
