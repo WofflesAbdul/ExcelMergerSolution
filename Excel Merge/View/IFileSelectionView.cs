@@ -40,5 +40,5 @@ public interface IFileSelectionView
 
     Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token);
 
-    void ShowError(string title, string message);
+    void ShowError(string title, Exception ex);
 }

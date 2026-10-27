@@ -78,6 +78,9 @@
     <Compile Include="Presenter\FileSelectionPresenter.cs" />
     <Compile Include="Common\TargetFileMode.cs" />
     <Compile Include="Presenter\IFileSelectionPresenter.cs" />
+    <Compile Include="View\ExceptionDialog\ExceptionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="View\FileSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>

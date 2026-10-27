@@ -185,9 +185,8 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
         catch (Exception ex)
         {
-            var fullMessage = BuildExceptionMessage(ex);
             view.SetCompletionStatus($"{info.ErrorMessage} {ex.Message}");
-            view.ShowError(info.ErrorMessage, fullMessage);
+            view.ShowError(info.ErrorMessage, ex);
         }
         finally
         {

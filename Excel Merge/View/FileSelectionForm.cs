@@ -1,11 +1,11 @@
-﻿using Excel_Merge.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExcelMerge;
 
 public partial class FileSelectionForm : Form, IFileSelectionView
 {
@@ -113,7 +113,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     public void NewFileCreated() => rbUseExistingFile.Checked = true;
 
-    public void ShowError(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+    public void ShowError(string title, Exception ex) => ExceptionDialog.Show(this, ex);
 
     private void Form1_Load(object sender, EventArgs e)
     {
