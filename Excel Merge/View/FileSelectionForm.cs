@@ -24,6 +24,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripDropDownButtonFile });
 
         rbUseExistingFile.Checked = true;
+
+        toolStripDropDownButton.DropDownOpening += (sender, e) => ReportMenuOpening?.Invoke(this, EventArgs.Empty);
     }
 
     public event EventHandler ResetRequested;
@@ -31,6 +33,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     public event EventHandler OpenFileClicked;
 
     public event EventHandler OpenFolderClicked;
+
+    public event EventHandler ReportMenuOpening;
 
     public event EventHandler<TargetFileMode> TargetFileModeChanged;
 
@@ -112,6 +116,16 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     }
 
     public void NewFileCreated() => rbUseExistingFile.Checked = true;
+
+    public void SetReportActionsEnabled(bool enabled)
+    {
+        addCoverPageToolStripMenuItem.Enabled = enabled;
+        addSummaryPageToolStripMenuItem.Enabled = enabled;
+        mergeCoverPageToolStripMenuItem.Enabled = enabled;
+        mergeSummaryPageToolStripMenuItem.Enabled = enabled;
+        mergeTemplateFileToolStripMenuItem.Enabled = enabled;
+        downloadTemplateFileToolStripMenuItem.Enabled = true;
+    }
 
     public void ShowError(string title, Exception ex) => ExceptionDialog.Show(this, ex);
 

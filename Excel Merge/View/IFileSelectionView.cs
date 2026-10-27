@@ -14,6 +14,8 @@ public interface IFileSelectionView
 
     event EventHandler<TargetFileMode> TargetFileModeChanged; // new event for radio button toggle
 
+    event EventHandler ReportMenuOpening;
+
     void DisplayFileName(string fileName);
 
     void DisplayDirectoryPath(string directoryPath);
@@ -37,6 +39,8 @@ public interface IFileSelectionView
     void SetCompletionStatus(string message, bool isError = false);
 
     void NewFileCreated();
+
+    void SetReportActionsEnabled(bool enabled);
 
     Task AnimateProgressBarAsync(int steps, int delayMs, CancellationToken token);
 

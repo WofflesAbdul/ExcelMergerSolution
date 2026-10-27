@@ -28,6 +28,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.OpenFileClicked += OnOpenFileClicked;
         view.OpenFolderClicked += OnOpenFolderClicked;
         view.TargetFileModeChanged += OnTargetFileModeChanged;
+        view.ReportMenuOpening += OnReportMenuOpening;
 
         view.ResetRequested += OnReset;
     }
@@ -132,6 +133,15 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     public void OnModelStateChanged(object sender, ModelStateChangedEventArgs e)
     {
         (view as Control)?.SafeInvoke(() => UpdateView(e));
+    }
+
+    private void OnReportMenuOpening(object sender, EventArgs e)
+    {
+        bool hasValidBaseFile = TargetFileMode == TargetFileMode.ExistingFile
+            && !string.IsNullOrWhiteSpace(model.ExistingBaseFilePath)
+            && File.Exists(model.ExistingBaseFilePath);
+
+        view.SetReportActionsEnabled(hasValidBaseFile);
     }
 
     public async Task RunOperationAsync(OperationRequested op, Func<Task> action)
