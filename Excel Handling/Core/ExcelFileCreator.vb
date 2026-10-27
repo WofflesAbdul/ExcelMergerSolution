@@ -1,10 +1,12 @@
 ﻿Imports System.IO
-Imports System.Runtime.InteropServices
 Imports Microsoft.Office.Interop
 
 Public NotInheritable Class ExcelFileCreator
 
     Private Shared ReadOnly PlaceholderNames As String() = {"Placeholder", "Sheet1", "Sheet2", "Sheet3"}
+
+    Private Sub New()
+    End Sub
 
     Public Shared Function CreateNewExcel(directoryPath As String, fileName As String) As String
         If String.IsNullOrWhiteSpace(directoryPath) Then Throw New ArgumentException("Directory path cannot be empty.", NameOf(directoryPath))
@@ -14,24 +16,28 @@ Public NotInheritable Class ExcelFileCreator
             fileName &= ".xlsx"
         End If
 
-        Dim fullPath As String = Path.Combine(directoryPath, fileName)
-
         If Not Directory.Exists(directoryPath) Then
             Directory.CreateDirectory(directoryPath)
         End If
 
+        Dim fullPath As String = Path.Combine(directoryPath, fileName)
         Dim excelApp As Excel.Application = Nothing
+        Dim workbooks As Excel.Workbooks = Nothing
         Dim wb As Excel.Workbook = Nothing
 
         Try
-            excelApp = New Excel.Application()
-            excelApp.DisplayAlerts = False
+            Using filterScope As New ExcelHelper.ExcelMessageFilterScope()
+                excelApp = New Excel.Application()
+                excelApp.DisplayAlerts = False
 
-            wb = excelApp.Workbooks.Add()
-            wb.SaveAs(fullPath)
-            wb.Close(SaveChanges:=False)
-            ReleaseComObject(wb)
-            wb = Nothing
+                workbooks = excelApp.Workbooks
+                wb = workbooks.Add()
+
+                wb.SaveAs(fullPath)
+                wb.Close(SaveChanges:=False)
+                ExcelHelper.ReleaseComObject(wb)
+                wb = Nothing
+            End Using
 
             If Not File.Exists(fullPath) Then
                 Throw New ApplicationException($"Failed to create Excel file at {fullPath}")
@@ -41,13 +47,25 @@ Public NotInheritable Class ExcelFileCreator
 
         Finally
             If wb IsNot Nothing Then
-                wb.Close(SaveChanges:=False)
-                ReleaseComObject(wb)
+                Try
+                    wb.Close(SaveChanges:=False)
+                Catch
+                    ' Preserve the original exception.
+                Finally
+                    ExcelHelper.ReleaseComObject(wb)
+                End Try
             End If
 
+            ExcelHelper.ReleaseComObject(workbooks)
+
             If excelApp IsNot Nothing Then
-                excelApp.Quit()
-                ReleaseComObject(excelApp)
+                Try
+                    excelApp.Quit()
+                Catch
+                    ' Preserve the original exception.
+                Finally
+                    ExcelHelper.ReleaseComObject(excelApp)
+                End Try
             End If
         End Try
     End Function
@@ -58,34 +76,26 @@ Public NotInheritable Class ExcelFileCreator
         Dim sheets As Excel.Sheets = Nothing
 
         Try
-            sheets = wb.Sheets
+            sheets = wb.Worksheets
 
             For i As Integer = sheets.Count To 1 Step -1
                 Dim ws As Excel.Worksheet = Nothing
 
                 Try
-                    ws = CType(sheets(i), Excel.Worksheet)
+                    ws = CType(sheets.Item(i), Excel.Worksheet)
 
-                    If PlaceholderNames.Contains(ws.Name, StringComparer.OrdinalIgnoreCase) Then
+                    If Array.Exists(PlaceholderNames, Function(name) String.Equals(name, ws.Name, StringComparison.OrdinalIgnoreCase)) Then
                         ws.Delete()
                     End If
 
                 Finally
-                    ReleaseComObject(ws)
+                    ExcelHelper.ReleaseComObject(ws)
                 End Try
             Next
 
         Finally
-            ReleaseComObject(sheets)
+            ExcelHelper.ReleaseComObject(sheets)
         End Try
     End Sub
 
-    Private Shared Sub ReleaseComObject(obj As Object)
-        Try
-            If obj IsNot Nothing AndAlso Marshal.IsComObject(obj) Then
-                Marshal.ReleaseComObject(obj)
-            End If
-        Catch
-        End Try
-    End Sub
 End Class
