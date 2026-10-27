@@ -13,7 +13,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     private readonly IFileSelectionPresenter presenter;
     private readonly List<Control> controlsToDisable = new List<Control>();
     private readonly List<ToolStripDropDownButton> toolStripButtonsToDisable = new List<ToolStripDropDownButton>();
-    private CancellationTokenSource progressAnimationCts;
 
     public FileSelectionForm()
     {
