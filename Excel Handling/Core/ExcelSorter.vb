@@ -1,5 +1,4 @@
-﻿
-Imports System.Threading
+﻿Imports System.Threading
 Imports Microsoft.Office.Interop
 
 Public Class ExcelSorter
