@@ -230,4 +230,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     }
 
     private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.LoadLastFile();
+
+    private void DownloadTemplateFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.DownloadTemplateFile();
 }

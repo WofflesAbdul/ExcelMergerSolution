@@ -34,4 +34,6 @@ public interface IFileSelectionPresenter
     Task CreateNewFileAction();
 
     void LoadLastFile();
+
+    void DownloadTemplateFile();
 }

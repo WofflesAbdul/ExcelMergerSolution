@@ -277,6 +277,70 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
     }
 
+    public void DownloadTemplateFile()
+    {
+        using (SaveFileDialog dialog = new SaveFileDialog())
+        {
+            dialog.Title = "Download Report Template";
+            dialog.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dialog.FileName = "DvtReportTemplate.xlsx";
+            dialog.DefaultExt = "xlsx";
+            dialog.AddExtension = true;
+            dialog.OverwritePrompt = true;
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            string destinationPath = dialog.FileName;
+            string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx");
+
+            if (!File.Exists(templatePath))
+            {
+                view.ShowError("Template Not Found", new FileNotFoundException("The report template could not be found.", templatePath));
+                return;
+            }
+
+            try
+            {
+                RunOnStaThreadAsync(() =>
+                {
+                    Microsoft.Office.Interop.Excel.Application excel = null;
+                    Microsoft.Office.Interop.Excel.Workbook workbook = null;
+
+                    try
+                    {
+                        excel = new Microsoft.Office.Interop.Excel.Application
+                        {
+                            Visible = false,
+                            DisplayAlerts = false
+                        };
+
+                        workbook = excel.Workbooks.Open(templatePath);
+                        workbook.SaveAs(destinationPath, Microsoft.Office.Interop.Excel.XlFileFormat.xlOpenXMLWorkbook);
+                    }
+                    finally
+                    {
+                        if (workbook != null)
+                        {
+                            workbook.Close(false);
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                        }
+
+                        if (excel != null)
+                        {
+                            excel.Quit();
+                            System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
+                        }
+                    }
+                }).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                view.ShowError("Download Template Failed", ex);
+            }
+        }
+    }
+
     private static Task RunOnStaThreadAsync(Action action)
     {
         var completion = new TaskCompletionSource<object>();

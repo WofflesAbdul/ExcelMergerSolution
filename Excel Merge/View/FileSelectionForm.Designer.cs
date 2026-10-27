@@ -567,6 +567,7 @@
             this.downloadTemplateFileToolStripMenuItem.Name = "downloadTemplateFileToolStripMenuItem";
             this.downloadTemplateFileToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.downloadTemplateFileToolStripMenuItem.Text = "Download Template File";
+            this.downloadTemplateFileToolStripMenuItem.Click += new System.EventHandler(this.DownloadTemplateFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator8
             // 
