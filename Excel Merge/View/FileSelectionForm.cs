@@ -230,5 +230,9 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.LoadLastFile();
 
+    private async void AddCoverPageToolStripMenuItem_Click(object sender, EventArgs e) => await presenter.RunOperationAsync(OperationRequested.AddCoverPage, presenter.AddCoverPageAction);
+
+    private async void AddSummaryPageToolStripMenuItem_Click(object sender, EventArgs e) => await presenter.RunOperationAsync(OperationRequested.AddSummaryPage, presenter.AddSummaryPageAction);
+
     private void DownloadTemplateFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.DownloadTemplateFile();
 }

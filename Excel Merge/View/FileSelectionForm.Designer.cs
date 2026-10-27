@@ -550,12 +550,14 @@
             this.addCoverPageToolStripMenuItem.Name = "addCoverPageToolStripMenuItem";
             this.addCoverPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.addCoverPageToolStripMenuItem.Text = "Add Cover Page";
+            this.addCoverPageToolStripMenuItem.Click += new System.EventHandler(this.AddCoverPageToolStripMenuItem_Click);
             // 
             // addSummaryPageToolStripMenuItem
             // 
             this.addSummaryPageToolStripMenuItem.Name = "addSummaryPageToolStripMenuItem";
             this.addSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.addSummaryPageToolStripMenuItem.Text = "Add Summary Page";
+            this.addSummaryPageToolStripMenuItem.Click += new System.EventHandler(this.AddSummaryPageToolStripMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
