@@ -64,6 +64,16 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
+            this.addCoverPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addSummaryPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.downloadTemplateFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.mergeCoverPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mergeSummaryPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mergeTemplateFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -445,7 +455,9 @@
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDropDownButtonFile,
-            this.toolStripSeparator3});
+            this.toolStripSeparator3,
+            this.toolStripDropDownButton,
+            this.toolStripSeparator9});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -514,6 +526,75 @@
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripDropDownButton
+            // 
+            this.toolStripDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addCoverPageToolStripMenuItem,
+            this.addSummaryPageToolStripMenuItem,
+            this.toolStripSeparator7,
+            this.downloadTemplateFileToolStripMenuItem,
+            this.toolStripSeparator8,
+            this.mergeCoverPageToolStripMenuItem,
+            this.mergeSummaryPageToolStripMenuItem,
+            this.mergeTemplateFileToolStripMenuItem});
+            this.toolStripDropDownButton.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton.Image")));
+            this.toolStripDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton.Name = "toolStripDropDownButton";
+            this.toolStripDropDownButton.Size = new System.Drawing.Size(69, 22);
+            this.toolStripDropDownButton.Text = "Template";
+            // 
+            // addCoverPageToolStripMenuItem
+            // 
+            this.addCoverPageToolStripMenuItem.Name = "addCoverPageToolStripMenuItem";
+            this.addCoverPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.addCoverPageToolStripMenuItem.Text = "Add Cover Page";
+            // 
+            // addSummaryPageToolStripMenuItem
+            // 
+            this.addSummaryPageToolStripMenuItem.Name = "addSummaryPageToolStripMenuItem";
+            this.addSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.addSummaryPageToolStripMenuItem.Text = "Add Summary Page";
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(198, 6);
+            // 
+            // downloadTemplateFileToolStripMenuItem
+            // 
+            this.downloadTemplateFileToolStripMenuItem.Name = "downloadTemplateFileToolStripMenuItem";
+            this.downloadTemplateFileToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.downloadTemplateFileToolStripMenuItem.Text = "Download Template File";
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(198, 6);
+            // 
+            // mergeCoverPageToolStripMenuItem
+            // 
+            this.mergeCoverPageToolStripMenuItem.Name = "mergeCoverPageToolStripMenuItem";
+            this.mergeCoverPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.mergeCoverPageToolStripMenuItem.Text = "Merge Cover Page";
+            // 
+            // mergeSummaryPageToolStripMenuItem
+            // 
+            this.mergeSummaryPageToolStripMenuItem.Name = "mergeSummaryPageToolStripMenuItem";
+            this.mergeSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.mergeSummaryPageToolStripMenuItem.Text = "Merge Summary Page";
+            // 
+            // mergeTemplateFileToolStripMenuItem
+            // 
+            this.mergeTemplateFileToolStripMenuItem.Name = "mergeTemplateFileToolStripMenuItem";
+            this.mergeTemplateFileToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.mergeTemplateFileToolStripMenuItem.Text = "Merge Template File";
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 25);
             // 
             // FileSelectionForm
             // 
@@ -590,4 +671,14 @@
     private System.Windows.Forms.ToolStripMenuItem loadLastFileToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     private System.Windows.Forms.Button ButtonMergeAndSort;
+    private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton;
+    private System.Windows.Forms.ToolStripMenuItem addCoverPageToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem addSummaryPageToolStripMenuItem;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+    private System.Windows.Forms.ToolStripMenuItem downloadTemplateFileToolStripMenuItem;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+    private System.Windows.Forms.ToolStripMenuItem mergeCoverPageToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem mergeSummaryPageToolStripMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem mergeTemplateFileToolStripMenuItem;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
 }
