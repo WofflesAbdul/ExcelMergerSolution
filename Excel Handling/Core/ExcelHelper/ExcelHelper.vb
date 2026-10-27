@@ -4,9 +4,6 @@ Imports Microsoft.Office.Interop
 
 Public NotInheritable Class ExcelHelper
 
-    Private Sub New()
-    End Sub
-
     <ComImport>
     <Guid("00000016-0000-0000-C000-000000000046")>
     <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
@@ -86,11 +83,7 @@ Public NotInheritable Class ExcelHelper
         End Sub
     End Class
 
-    Public Shared Sub ResetWorksheetCursors(
-    workbook As Excel.Workbook,
-    Optional reportProgress As Action(Of Integer) = Nothing,
-    Optional progressStart As Integer = 0,
-    Optional progressEnd As Integer = 100)
+    Public Shared Sub ResetWorksheetCursors(workbook As Excel.Workbook, Optional reportProgress As Action(Of Integer) = Nothing, Optional progressStart As Integer = 0, Optional progressEnd As Integer = 100)
 
         If workbook Is Nothing Then Throw New ArgumentNullException(NameOf(workbook))
 

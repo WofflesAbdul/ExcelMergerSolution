@@ -185,9 +185,8 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
         catch (Exception ex)
         {
-            var fullMessage = BuildExceptionMessage(ex);
             view.SetCompletionStatus($"{info.ErrorMessage} {ex.Message}");
-            view.ShowError(info.ErrorMessage, fullMessage);
+            view.ShowError(info.ErrorMessage, ex);
         }
         finally
         {
@@ -206,11 +205,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         {
             var merger = new ExcelMerger();
 
-            merger.MergeFiles(
-                baseFile: model.ExistingBaseFilePath,
-                targets: model.TargetFilePaths.ToList(),
-                reportProgress: percent => view.SetProgress(percent),
-                reportStatus: message => view.SetOngoingStatus(message));
+            merger.MergeFiles(baseFile: model.ExistingBaseFilePath, targets: model.TargetFilePaths.ToList(), reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
@@ -220,11 +215,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         {
             var merger = new ExcelMerger();
 
-            merger.MergeAndSortFiles(
-                baseFile: model.ExistingBaseFilePath,
-                targets: model.TargetFilePaths.ToList(),
-                reportProgress: percent => view.SetProgress(percent),
-                reportStatus: message => view.SetOngoingStatus(message));
+            merger.MergeAndSortFiles(baseFile: model.ExistingBaseFilePath, targets: model.TargetFilePaths.ToList(), reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
@@ -233,12 +224,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var sorter = new FunctionalTestSorter();
+            var sorter = new ExcelSorter();
 
-            sorter.SortSheets(
-                filePath: model.ExistingBaseFilePath,
-                reportProgress: percent => view.SetProgress(percent),
-                reportStatus: message => view.SetOngoingStatus(message));
+            sorter.SortSheets(filePath: model.ExistingBaseFilePath, reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
@@ -246,9 +234,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            string createdFilePath = ExcelFileCreator.CreateNewExcel(
-                directoryPath: model.DirectoryPath,
-                fileName: model.NewFileName);
+            string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
 
@@ -335,8 +321,6 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             level++;
         }
 
-        return string.Join(
-            Environment.NewLine + Environment.NewLine,
-            messages);
+        return string.Join(Environment.NewLine + Environment.NewLine, messages);
     }
 }

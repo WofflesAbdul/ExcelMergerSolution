@@ -102,7 +102,7 @@ Public Class ExcelMerger
 
             reportStatus?.Invoke("Sorting worksheets...")
 
-            Dim sorter As New FunctionalTestSorter()
+            Dim sorter As New ExcelSorter()
             sorter.SortSheets(destWB, reportProgress, reportStatus, progressStart:=40, progressEnd:=80)
 
             reportStatus?.Invoke("Resetting worksheet cursors...")
