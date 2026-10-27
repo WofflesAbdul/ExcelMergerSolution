@@ -224,7 +224,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var sorter = new FunctionalTestSorter();
+            var sorter = new ExcelSorter();
 
             sorter.SortSheets(filePath: model.ExistingBaseFilePath, reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });

@@ -52,37 +52,6 @@ Public NotInheritable Class ExcelFileCreator
         End Try
     End Function
 
-    Public Shared Sub RemovePlaceholderSheets(fullPath As String)
-        If Not File.Exists(fullPath) Then Return
-
-        Dim excelApp As Excel.Application = Nothing
-        Dim wb As Excel.Workbook = Nothing
-
-        Try
-            excelApp = New Excel.Application()
-            excelApp.DisplayAlerts = False
-            wb = excelApp.Workbooks.Open(fullPath)
-
-            RemovePlaceholderSheets(wb)
-
-            wb.Save()
-
-        Catch ex As Exception
-            Throw New ApplicationException($"Failed to remove placeholder sheets: {ex.Message}", ex)
-
-        Finally
-            If wb IsNot Nothing Then
-                wb.Close(SaveChanges:=False)
-                ReleaseComObject(wb)
-            End If
-
-            If excelApp IsNot Nothing Then
-                excelApp.Quit()
-                ReleaseComObject(excelApp)
-            End If
-        End Try
-    End Sub
-
     Public Shared Sub RemovePlaceholderSheets(wb As Excel.Workbook)
         If wb Is Nothing Then Throw New ArgumentNullException(NameOf(wb))
 

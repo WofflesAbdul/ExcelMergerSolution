@@ -2,7 +2,7 @@
 Imports System.Threading
 Imports Microsoft.Office.Interop
 
-Public Class FunctionalTestSorter
+Public Class ExcelSorter
 
     Public Sub SortSheets(filePath As String, Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing)
 
