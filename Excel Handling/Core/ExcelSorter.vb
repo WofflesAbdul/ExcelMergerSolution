@@ -4,10 +4,7 @@ Imports Microsoft.Office.Interop
 
 Public Class FunctionalTestSorter
 
-    Public Sub SortSheets(
-        filePath As String,
-        Optional reportProgress As Action(Of Integer) = Nothing,
-        Optional reportStatus As Action(Of String) = Nothing)
+    Public Sub SortSheets(filePath As String, Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing)
 
         If Thread.CurrentThread.GetApartmentState() <> ApartmentState.STA Then
             Throw New InvalidOperationException(
@@ -84,12 +81,7 @@ Public Class FunctionalTestSorter
         End Try
     End Sub
 
-    Public Sub SortSheets(
-        wb As Excel.Workbook,
-        Optional reportProgress As Action(Of Integer) = Nothing,
-        Optional reportStatus As Action(Of String) = Nothing,
-        Optional progressStart As Integer = 5,
-        Optional progressEnd As Integer = 80)
+    Public Sub SortSheets(wb As Excel.Workbook, Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing, Optional progressStart As Integer = 5, Optional progressEnd As Integer = 80)
 
         If wb Is Nothing Then
             Throw New ArgumentNullException(NameOf(wb))
@@ -120,38 +112,23 @@ Public Class FunctionalTestSorter
                     Dim parts() As String
 
                     If allParts.Length > 1 Then
-                        parts = {
-                            allParts(0),
-                            String.Join(" ", allParts, 1, allParts.Length - 1)
-                        }
+                        parts = {allParts(0), String.Join(" ", allParts, 1, allParts.Length - 1)}
                     Else
                         parts = allParts
                     End If
 
-                    Dim suffix As String =
-                        If(parts.Length > 1, parts(1), String.Empty)
+                    Dim suffix As String = If(parts.Length > 1, parts(1), String.Empty)
 
-                    Dim baseIndex As Integer =
-                        FunctionalTestSequence.TestNames.FindIndex(
-                            Function(b) fullName.IndexOf(
-                                b,
-                                StringComparison.OrdinalIgnoreCase) >= 0)
+                    Dim baseIndex As Integer = FunctionalTestSequence.TestNames.FindIndex(Function(b) fullName.IndexOf(b, StringComparison.OrdinalIgnoreCase) >= 0)
 
                     If baseIndex = -1 Then
                         baseIndex = Integer.MaxValue
                     End If
 
-                    Dim voltageOutputIndex As Integer =
-                        VoltageOutputSequence.GetVoltageOutputIndex(suffix)
-
-                    Dim vpsuIndex As Integer =
-                        VpsuSequence.GetVpsuIndex(suffix)
-
-                    Dim tempIndex As Integer =
-                        TemperatureSequence.GetTemperatureIndex(suffix)
-
-                    Dim headerPriority As Integer =
-                        HeaderSequence.GetHeaderPriority(fullName)
+                    Dim voltageOutputIndex As Integer = VoltageOutputSequence.GetVoltageOutputIndex(suffix)
+                    Dim vpsuIndex As Integer = VpsuSequence.GetVpsuIndex(suffix)
+                    Dim tempIndex As Integer = TemperatureSequence.GetTemperatureIndex(suffix)
+                    Dim headerPriority As Integer = HeaderSequence.GetHeaderPriority(fullName)
 
                     sheetInfoList.Add(New SheetNameParsingInfo With {
                         .Worksheet = ws,
@@ -170,12 +147,7 @@ Public Class FunctionalTestSorter
                     ExcelHelper.ReleaseComObject(ws)
                 End Try
 
-                ReportStageProgress(
-                    reportProgress,
-                    i,
-                    totalSheets,
-                    progressStart,
-                    readEnd)
+                ReportStageProgress(reportProgress, i, totalSheets, progressStart, readEnd)
             Next
 
             ' Stage 2: Sort the worksheet references in memory.
@@ -201,11 +173,7 @@ Public Class FunctionalTestSorter
                 Try
                     firstSheet = CType(sheets.Item(1), Excel.Worksheet)
 
-                    If Not String.Equals(
-                        firstSheet.Name,
-                        sortedSheets(0).OriginalName,
-                        StringComparison.Ordinal) Then
-
+                    If Not String.Equals(firstSheet.Name, sortedSheets(0).OriginalName, StringComparison.Ordinal) Then
                         sortedSheets(0).Worksheet.Move(Before:=firstSheet)
                     End If
 
@@ -213,23 +181,13 @@ Public Class FunctionalTestSorter
                     ExcelHelper.ReleaseComObject(firstSheet)
                 End Try
 
-                ReportStageProgress(
-                    reportProgress,
-                    1,
-                    sortedSheets.Count,
-                    moveStart,
-                    progressEnd)
+                ReportStageProgress(reportProgress, 1, sortedSheets.Count, moveStart, progressEnd)
 
                 For i As Integer = 1 To sortedSheets.Count - 1
                     sortedSheets(i).Worksheet.Move(
                         After:=sortedSheets(i - 1).Worksheet)
 
-                    ReportStageProgress(
-                        reportProgress,
-                        i + 1,
-                        sortedSheets.Count,
-                        moveStart,
-                        progressEnd)
+                    ReportStageProgress(reportProgress, i + 1, sortedSheets.Count, moveStart, progressEnd)
                 Next
             Else
                 reportProgress?.Invoke(progressEnd)
@@ -247,12 +205,7 @@ Public Class FunctionalTestSorter
         End Try
     End Sub
 
-    Private Sub ReportStageProgress(
-        reportProgress As Action(Of Integer),
-        processedItems As Integer,
-        totalItems As Integer,
-        progressStart As Integer,
-        progressEnd As Integer)
+    Private Sub ReportStageProgress(reportProgress As Action(Of Integer), processedItems As Integer, totalItems As Integer, progressStart As Integer, progressEnd As Integer)
 
         If reportProgress Is Nothing OrElse totalItems <= 0 Then
             Return

@@ -4,9 +4,6 @@ Imports Microsoft.Office.Interop
 
 Public NotInheritable Class ExcelFileCreator
 
-    Private Sub New()
-    End Sub
-
     Private Shared ReadOnly PlaceholderNames As String() = {"Placeholder", "Sheet1", "Sheet2", "Sheet3"}
 
     Public Shared Function CreateNewExcel(directoryPath As String, fileName As String) As String
@@ -122,5 +119,4 @@ Public NotInheritable Class ExcelFileCreator
         Catch
         End Try
     End Sub
-
 End Class
