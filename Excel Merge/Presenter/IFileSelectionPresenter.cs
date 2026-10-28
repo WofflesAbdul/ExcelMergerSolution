@@ -40,4 +40,8 @@ public interface IFileSelectionPresenter
     Task AddSummaryPageAction();
 
     void DownloadTemplateFile();
+
+    string SelectSourceWorkbook();
+
+    Task MergeCoverPageAction(string sourceFile);
 }

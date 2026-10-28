@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -367,6 +366,49 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             }
         }
     }
+
+    public string SelectSourceWorkbook()
+    {
+        using (var dialog = new OpenFileDialog())
+        {
+            dialog.Filter = "Excel Workbooks (*.xlsx;*.xlsm;*.xls)|*.xlsx;*.xlsm;*.xls";
+            dialog.Title = "Select Source Workbook";
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.ExistingBaseFilePath) &&
+                string.Equals(dialog.FileName, model.ExistingBaseFilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(
+                    "The source workbook must be different from the destination workbook.",
+                    "Invalid Source Workbook",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return null;
+            }
+
+            return dialog.FileName;
+        }
+    }
+
+    public Task MergeCoverPageAction(string sourceFile)
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var merger = new ExcelWorksheetMergerCoverPage();
+
+            merger.MergeCoverPage(
+                baseFile: model.ExistingBaseFilePath,
+                sourceFile: sourceFile,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
+
 
     private static Task RunOnStaThreadAsync(Action action)
     {

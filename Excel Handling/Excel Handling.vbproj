@@ -72,6 +72,7 @@
     <Compile Include="Operations\Worksheets\ExcelWorksheetAdderCoverPage.vb" />
     <Compile Include="Operations\Workbook\ExcelWorkbookSorter.vb" />
     <Compile Include="Operations\Worksheets\ExcelWorksheetAdderSummaryPage.vb" />
+    <Compile Include="Operations\Worksheets\ExcelWorksheetMergerCoverPage.vb" />
     <Compile Include="Utilities\ExcelWorksheetHeaderInserter.vb" />
     <Compile Include="Sorting\HeaderSequence.vb" />
     <Compile Include="Sorting\TemperatureSequence.vb" />

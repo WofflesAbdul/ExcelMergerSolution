@@ -581,6 +581,7 @@
             this.mergeCoverPageToolStripMenuItem.Name = "mergeCoverPageToolStripMenuItem";
             this.mergeCoverPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.mergeCoverPageToolStripMenuItem.Text = "Merge Cover Page";
+            this.mergeCoverPageToolStripMenuItem.Click += new System.EventHandler(this.MergeCoverPageToolStripMenuItem_Click);
             // 
             // mergeSummaryPageToolStripMenuItem
             // 
