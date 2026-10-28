@@ -74,6 +74,7 @@
     <Compile Include="Operations\Workbook\ExcelWorkbookSorter.vb" />
     <Compile Include="Operations\Worksheets\ExcelWorksheetAdderSummaryPage.vb" />
     <Compile Include="Operations\Worksheets\ExcelWorksheetMergerCoverPage.vb" />
+    <Compile Include="Operations\Worksheets\ExcelWorksheetMergerReport.vb" />
     <Compile Include="Operations\Worksheets\ExcelWorksheetMergerSummaryPage.vb" />
     <Compile Include="Utilities\ExcelWorksheetHeaderInserter.vb" />
     <Compile Include="Sorting\HeaderSequence.vb" />

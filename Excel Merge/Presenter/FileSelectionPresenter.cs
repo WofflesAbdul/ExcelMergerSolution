@@ -265,15 +265,16 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         }
     }
 
+
     public Task AddCoverPageAction()
     {
         return RunOnStaThreadAsync(() =>
         {
-            var coverPageAdder = new ExcelWorksheetAdderCoverPage();
+            var adder = new ExcelWorksheetAdderCoverPage();
 
-            coverPageAdder.AddCoverPage(
+            adder.AddCoverPage(
                 baseFile: model.ExistingBaseFilePath,
-                templateFile: Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx"),
+                templateFile: GetReportTemplatePath(),
                 reportProgress: percent => view.SetProgress(percent),
                 reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -283,11 +284,11 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var summaryPageAdder = new ExcelWorksheetAdderSummaryPage();
+            var adder = new ExcelWorksheetAdderSummaryPage();
 
-            summaryPageAdder.AddSummaryPage(
+            adder.AddSummaryPage(
                 baseFile: model.ExistingBaseFilePath,
-                templateFile: Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx"),
+                templateFile: GetReportTemplatePath(),
                 reportProgress: percent => view.SetProgress(percent),
                 reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -310,10 +311,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
 
     public async Task DownloadTemplateFileAsync(string destinationPath)
     {
-        string templatePath = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "Resource",
-            "DvtReportTemplate.xltx");
+        string templatePath = GetReportTemplatePath();
 
         if (!File.Exists(templatePath))
         {
@@ -345,14 +343,26 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             {
                 if (workbook != null)
                 {
-                    workbook.Close(false);
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                    try
+                    {
+                        workbook.Close(SaveChanges: false);
+                    }
+                    finally
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                    }
                 }
 
                 if (excel != null)
                 {
-                    excel.Quit();
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
+                    try
+                    {
+                        excel.Quit();
+                    }
+                    finally
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
+                    }
                 }
             }
         });
@@ -371,7 +381,10 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             }
 
             if (!string.IsNullOrWhiteSpace(model.ExistingBaseFilePath) &&
-                string.Equals(dialog.FileName, model.ExistingBaseFilePath, StringComparison.OrdinalIgnoreCase))
+                string.Equals(
+                    Path.GetFullPath(dialog.FileName),
+                    Path.GetFullPath(model.ExistingBaseFilePath),
+                    StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show(
                     "The source workbook must be different from the destination workbook.",
@@ -412,6 +425,24 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 reportProgress: percent => view.SetProgress(percent),
                 reportStatus: message => view.SetOngoingStatus(message));
         });
+    }
+
+    public Task MergeReportWorkbookAction(string sourceFile)
+    {
+        return RunOnStaThreadAsync(() =>
+            ExcelWorksheetMergerReport.MergeReportWorkbook(
+                destinationFile: model.ExistingBaseFilePath,
+                sourceFile: sourceFile,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message)));
+    }
+
+    private static string GetReportTemplatePath()
+    {
+        return Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Resource",
+            "DvtReportTemplate.xltx");
     }
 
     private static Task RunOnStaThreadAsync(Action action)

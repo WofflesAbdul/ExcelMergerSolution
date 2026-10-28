@@ -65,11 +65,11 @@ public static class OperationRegistry
         "Error: Failed to merge summary page!"
     );
 
-    public static readonly OperationInfo MergeTemplateFile = new OperationInfo(
-        OperationRequested.MergeTemplateFile,
-        "Status: Merging report template...",
-        "Completed: Report template merged successfully!",
-        "Error: Failed to merge report template!"
+    public static readonly OperationInfo MergeReportWorkbook = new OperationInfo(
+        OperationRequested.MergeReportWorkbook,
+        "Status: Merging report workbook...",
+        "Completed: Report workbook merged successfully!",
+        "Error: Failed to merge report workbook!"
     );
 
     public static OperationInfo Get(OperationRequested requested)
@@ -85,7 +85,7 @@ public static class OperationRegistry
             case OperationRequested.DownloadTemplateFile: return DownloadTemplateFile;
             case OperationRequested.MergeCoverPage: return MergeCoverPage;
             case OperationRequested.MergeSummaryPage: return MergeSummaryPage;
-            case OperationRequested.MergeTemplateFile: return MergeTemplateFile;
+            case OperationRequested.MergeReportWorkbook: return MergeReportWorkbook;
             default: throw new ArgumentOutOfRangeException(nameof(requested), requested, null);
         }
     }

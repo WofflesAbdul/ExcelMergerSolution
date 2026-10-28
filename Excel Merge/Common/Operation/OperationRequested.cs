@@ -10,5 +10,5 @@
     DownloadTemplateFile,
     MergeCoverPage,
     MergeSummaryPage,
-    MergeTemplateFile,
+    MergeReportWorkbook,
 }

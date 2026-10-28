@@ -122,7 +122,7 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         addSummaryPageToolStripMenuItem.Enabled = enabled;
         mergeCoverPageToolStripMenuItem.Enabled = enabled;
         mergeSummaryPageToolStripMenuItem.Enabled = enabled;
-        mergeTemplateFileToolStripMenuItem.Enabled = enabled;
+        mergeReportWorkbookToolStripMenuItem.Enabled = enabled;
         downloadTemplateFileToolStripMenuItem.Enabled = true;
     }
 
@@ -268,5 +268,17 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         }
 
         await presenter.RunOperationAsync(OperationRequested.MergeSummaryPage, () => presenter.MergeSummaryPageAction(sourceFile));
+    }
+
+    private async void MergeReportWorkbookToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string sourceFile = presenter.SelectSourceWorkbook();
+
+        if (string.IsNullOrWhiteSpace(sourceFile))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.MergeReportWorkbook, () => presenter.MergeReportWorkbookAction(sourceFile));
     }
 }

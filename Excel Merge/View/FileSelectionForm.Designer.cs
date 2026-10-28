@@ -72,7 +72,7 @@
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.mergeCoverPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mergeSummaryPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mergeTemplateFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mergeReportWorkbookToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.panel1.SuspendLayout();
             this.toolStrip2.SuspendLayout();
@@ -535,10 +535,10 @@
             this.addSummaryPageToolStripMenuItem,
             this.toolStripSeparator7,
             this.downloadTemplateFileToolStripMenuItem,
+            this.mergeReportWorkbookToolStripMenuItem,
             this.toolStripSeparator8,
             this.mergeCoverPageToolStripMenuItem,
-            this.mergeSummaryPageToolStripMenuItem,
-            this.mergeTemplateFileToolStripMenuItem});
+            this.mergeSummaryPageToolStripMenuItem});
             this.toolStripDropDownButton.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton.Image")));
             this.toolStripDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripDropDownButton.Name = "toolStripDropDownButton";
@@ -548,53 +548,54 @@
             // addCoverPageToolStripMenuItem
             // 
             this.addCoverPageToolStripMenuItem.Name = "addCoverPageToolStripMenuItem";
-            this.addCoverPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.addCoverPageToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.addCoverPageToolStripMenuItem.Text = "Add Cover Page";
             this.addCoverPageToolStripMenuItem.Click += new System.EventHandler(this.AddCoverPageToolStripMenuItem_Click);
             // 
             // addSummaryPageToolStripMenuItem
             // 
             this.addSummaryPageToolStripMenuItem.Name = "addSummaryPageToolStripMenuItem";
-            this.addSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.addSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.addSummaryPageToolStripMenuItem.Text = "Add Summary Page";
             this.addSummaryPageToolStripMenuItem.Click += new System.EventHandler(this.AddSummaryPageToolStripMenuItem_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(198, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(201, 6);
             // 
             // downloadTemplateFileToolStripMenuItem
             // 
             this.downloadTemplateFileToolStripMenuItem.Name = "downloadTemplateFileToolStripMenuItem";
-            this.downloadTemplateFileToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.downloadTemplateFileToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.downloadTemplateFileToolStripMenuItem.Text = "Download Template File";
             this.downloadTemplateFileToolStripMenuItem.Click += new System.EventHandler(this.DownloadTemplateFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(198, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(201, 6);
             // 
             // mergeCoverPageToolStripMenuItem
             // 
             this.mergeCoverPageToolStripMenuItem.Name = "mergeCoverPageToolStripMenuItem";
-            this.mergeCoverPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.mergeCoverPageToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.mergeCoverPageToolStripMenuItem.Text = "Merge Cover Page";
             this.mergeCoverPageToolStripMenuItem.Click += new System.EventHandler(this.MergeCoverPageToolStripMenuItem_Click);
             // 
             // mergeSummaryPageToolStripMenuItem
             // 
             this.mergeSummaryPageToolStripMenuItem.Name = "mergeSummaryPageToolStripMenuItem";
-            this.mergeSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.mergeSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.mergeSummaryPageToolStripMenuItem.Text = "Merge Summary Page";
             this.mergeSummaryPageToolStripMenuItem.Click += new System.EventHandler(this.MergeSummaryPageToolStripMenuItem_Click);
             // 
-            // mergeTemplateFileToolStripMenuItem
+            // mergeReportWorkbookToolStripMenuItem
             // 
-            this.mergeTemplateFileToolStripMenuItem.Name = "mergeTemplateFileToolStripMenuItem";
-            this.mergeTemplateFileToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
-            this.mergeTemplateFileToolStripMenuItem.Text = "Merge Template File";
+            this.mergeReportWorkbookToolStripMenuItem.Name = "mergeReportWorkbookToolStripMenuItem";
+            this.mergeReportWorkbookToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.mergeReportWorkbookToolStripMenuItem.Text = "Merge Report Workbook";
+            this.mergeReportWorkbookToolStripMenuItem.Click += new System.EventHandler(this.MergeReportWorkbookToolStripMenuItem_Click);
             // 
             // toolStripSeparator9
             // 
@@ -684,6 +685,6 @@
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
     private System.Windows.Forms.ToolStripMenuItem mergeCoverPageToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem mergeSummaryPageToolStripMenuItem;
-    private System.Windows.Forms.ToolStripMenuItem mergeTemplateFileToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+    private System.Windows.Forms.ToolStripMenuItem mergeReportWorkbookToolStripMenuItem;
 }
