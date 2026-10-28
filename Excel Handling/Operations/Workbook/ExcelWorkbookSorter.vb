@@ -1,7 +1,7 @@
 ﻿Imports System.Threading
 Imports Microsoft.Office.Interop
 
-Public Class ExcelSorter
+Public Class ExcelWorkbookSorter
 
     Public Sub SortSheets(filePath As String, Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing)
 
@@ -12,14 +12,14 @@ Public Class ExcelSorter
 
         Dim excelApp As Excel.Application = Nothing
         Dim wb As Excel.Workbook = Nothing
-        Dim messageFilter As ExcelHelper.ExcelMessageFilterScope = Nothing
+        Dim messageFilter As ExcelInteropHelper.ExcelMessageFilterScope = Nothing
         Dim completed As Boolean = False
 
         Try
             reportProgress?.Invoke(0)
             reportStatus?.Invoke("Opening workbook...")
 
-            messageFilter = New ExcelHelper.ExcelMessageFilterScope()
+            messageFilter = New ExcelInteropHelper.ExcelMessageFilterScope()
 
             excelApp = New Excel.Application()
             wb = excelApp.Workbooks.Open(filePath)
@@ -29,7 +29,7 @@ Public Class ExcelSorter
             SortSheets(wb, reportProgress, reportStatus, progressStart:=5, progressEnd:=80)
 
             reportStatus?.Invoke("Resetting worksheet cursors...")
-            ExcelHelper.ResetWorksheetCursors(wb, reportProgress, 80, 94)
+            ExcelInteropHelper.ResetWorksheetCursors(wb, reportProgress, 80, 94)
 
             reportProgress?.Invoke(94)
             reportStatus?.Invoke("Saving workbook...")
@@ -39,11 +39,11 @@ Public Class ExcelSorter
             reportStatus?.Invoke("Closing workbook...")
 
             wb.Close(SaveChanges:=False)
-            ExcelHelper.ReleaseComObject(wb)
+            ExcelInteropHelper.ReleaseComObject(wb)
             wb = Nothing
 
             excelApp.Quit()
-            ExcelHelper.ReleaseComObject(excelApp)
+            ExcelInteropHelper.ReleaseComObject(excelApp)
             excelApp = Nothing
 
             completed = True
@@ -58,7 +58,7 @@ Public Class ExcelSorter
                 Catch
                 End Try
 
-                ExcelHelper.ReleaseComObject(wb)
+                ExcelInteropHelper.ReleaseComObject(wb)
             End If
 
             If excelApp IsNot Nothing Then
@@ -67,7 +67,7 @@ Public Class ExcelSorter
                 Catch
                 End Try
 
-                ExcelHelper.ReleaseComObject(excelApp)
+                ExcelInteropHelper.ReleaseComObject(excelApp)
             End If
 
             If messageFilter IsNot Nothing Then
@@ -143,7 +143,7 @@ Public Class ExcelSorter
                     ws = Nothing
 
                 Finally
-                    ExcelHelper.ReleaseComObject(ws)
+                    ExcelInteropHelper.ReleaseComObject(ws)
                 End Try
 
                 ReportStageProgress(reportProgress, i, totalSheets, progressStart, readEnd)
@@ -177,7 +177,7 @@ Public Class ExcelSorter
                     End If
 
                 Finally
-                    ExcelHelper.ReleaseComObject(firstSheet)
+                    ExcelInteropHelper.ReleaseComObject(firstSheet)
                 End Try
 
                 ReportStageProgress(reportProgress, 1, sortedSheets.Count, moveStart, progressEnd)
@@ -197,10 +197,10 @@ Public Class ExcelSorter
 
         Finally
             For Each sheetInfo In sheetInfoList
-                ExcelHelper.ReleaseComObject(sheetInfo.Worksheet)
+                ExcelInteropHelper.ReleaseComObject(sheetInfo.Worksheet)
             Next
 
-            ExcelHelper.ReleaseComObject(sheets)
+            ExcelInteropHelper.ReleaseComObject(sheets)
         End Try
     End Sub
 

@@ -6,7 +6,7 @@ Imports Excel = Microsoft.Office.Interop.Excel
 ''' <summary>
 ''' Handles report template operations on Excel workbooks.
 ''' </summary>
-Public Class ExcelTemplateHandler
+Public Class ExcelWorksheetTemplateMerger
 
     ''' <summary>
     ''' Adds the cover page from a report template to an existing workbook.
@@ -32,6 +32,7 @@ Public Class ExcelTemplateHandler
         Dim coverSheet As Excel.Worksheet = Nothing
         Dim targetSheets As Excel.Sheets = Nothing
         Dim targetWorksheet As Excel.Worksheet = Nothing
+        Dim headerInserter As New ExcelWorksheetHeaderInserter()
 
         Try
             reportProgress?.Invoke(0)
@@ -81,7 +82,7 @@ Public Class ExcelTemplateHandler
             reportStatus?.Invoke("Copying cover page...")
 
             targetSheets = targetWorkbook.Worksheets
-            CopyHeaderWorksheet(coverSheet, targetSheets, coverSheetName)
+            headerInserter.CopyHeaderWorksheet(coverSheet, targetSheets, coverSheetName)
 
             reportProgress?.Invoke(80)
             reportStatus?.Invoke("Saving workbook...")
@@ -160,6 +161,7 @@ Public Class ExcelTemplateHandler
         Dim testItemRange As Excel.Range = Nothing
         Dim slotRange As Excel.Range = Nothing
         Dim definedName As Excel.Name = Nothing
+        Dim headerInserter As New ExcelWorksheetHeaderInserter()
 
         Try
             reportProgress?.Invoke(0)
@@ -208,12 +210,12 @@ Public Class ExcelTemplateHandler
             reportProgress?.Invoke(55)
             reportStatus?.Invoke("Copying lookup worksheet...")
 
-            CopyHeaderWorksheet(lookupSheet, targetSheets, "Lookup")
+            headerInserter.CopyHeaderWorksheet(lookupSheet, targetSheets, "Lookup")
 
             reportProgress?.Invoke(65)
             reportStatus?.Invoke("Copying summary worksheet...")
 
-            CopyHeaderWorksheet(summarySheet, targetSheets, "Summary")
+            headerInserter.CopyHeaderWorksheet(summarySheet, targetSheets, "Summary")
 
             reportProgress?.Invoke(75)
             reportStatus?.Invoke("Repairing formulas and dropdown references...")
@@ -350,52 +352,11 @@ Public Class ExcelTemplateHandler
     End Sub
 
     ''' <summary>
-    ''' Copies a header worksheet into the destination workbook in header-priority order.
+    ''' Sets the formula for a table column, if the column contains data rows.
     ''' </summary>
-    Private Sub CopyHeaderWorksheet(sourceSheet As Excel.Worksheet, targetSheets As Excel.Sheets, sheetName As String)
-        Dim insertionIndex As Integer = 1
-        Dim insertionSheet As Excel.Worksheet = Nothing
-
-        Try
-            Dim newPriority As Integer = HeaderSequence.GetHeaderPriority(sheetName)
-
-            For i As Integer = 1 To targetSheets.Count
-                Dim worksheet As Excel.Worksheet = Nothing
-
-                Try
-                    worksheet = CType(targetSheets.Item(i), Excel.Worksheet)
-
-                    Dim existingPriority As Integer = HeaderSequence.GetHeaderPriority(worksheet.Name)
-
-                    ' Header sheets are expected to be grouped at the beginning.
-                    If existingPriority = Integer.MaxValue Then
-                        Exit For
-                    End If
-
-                    ' Insert after headers of equal or higher priority.
-                    If existingPriority > newPriority Then
-                        insertionIndex = i
-                        Exit For
-                    End If
-
-                    insertionIndex = i + 1
-                Finally
-                    ExcelHelper.ReleaseComObject(worksheet)
-                End Try
-            Next
-
-            If insertionIndex > targetSheets.Count Then
-                insertionSheet = CType(targetSheets.Item(targetSheets.Count), Excel.Worksheet)
-                sourceSheet.Copy(After:=insertionSheet)
-            Else
-                insertionSheet = CType(targetSheets.Item(insertionIndex), Excel.Worksheet)
-                sourceSheet.Copy(Before:=insertionSheet)
-            End If
-        Finally
-            ExcelHelper.ReleaseComObject(insertionSheet)
-        End Try
-    End Sub
-
+    ''' <param name="table">The table containing the column.</param>
+    ''' <param name="columnName">The name of the table column.</param>
+    ''' <param name="formula">The formula to apply.</param>
     Private Sub SetTableColumnFormula(table As Excel.ListObject, columnName As String, formula As String)
         Dim columnRange As Excel.Range = Nothing
 

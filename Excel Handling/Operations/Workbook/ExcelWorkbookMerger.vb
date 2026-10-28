@@ -1,7 +1,7 @@
 ﻿Imports System.Threading
 Imports Microsoft.Office.Interop
 
-Public Class ExcelMerger
+Public Class ExcelWorkbookMerger
 
     Public Sub MergeFiles(baseFile As String, targets As IEnumerable(Of String), Optional reportProgress As Action(Of Integer) = Nothing, Optional reportStatus As Action(Of String) = Nothing)
         If Thread.CurrentThread.GetApartmentState() <> ApartmentState.STA Then
@@ -10,10 +10,10 @@ Public Class ExcelMerger
 
         Dim excelApp As Excel.Application = Nothing
         Dim destWB As Excel.Workbook = Nothing
-        Dim messageFilter As ExcelHelper.ExcelMessageFilterScope = Nothing
+        Dim messageFilter As ExcelInteropHelper.ExcelMessageFilterScope = Nothing
 
         Try
-            messageFilter = New ExcelHelper.ExcelMessageFilterScope()
+            messageFilter = New ExcelInteropHelper.ExcelMessageFilterScope()
 
             reportStatus?.Invoke("Opening workbook...")
             reportProgress?.Invoke(0)
@@ -26,10 +26,10 @@ Public Class ExcelMerger
             reportStatus?.Invoke("Merging files...")
 
             MergeSheets(excelApp, destWB, targets, reportProgress, 5, 85)
-            ExcelFileCreator.RemovePlaceholderSheets(destWB)
+            ExcelWorkbookCreator.RemovePlaceholderSheets(destWB)
 
             reportStatus?.Invoke("Resetting worksheet cursors...")
-            ExcelHelper.ResetWorksheetCursors(destWB, reportProgress, 85, 94)
+            ExcelInteropHelper.ResetWorksheetCursors(destWB, reportProgress, 85, 94)
 
             reportProgress?.Invoke(94)
             reportStatus?.Invoke("Saving workbook...")
@@ -38,11 +38,11 @@ Public Class ExcelMerger
             reportStatus?.Invoke("Closing workbook...")
             reportProgress?.Invoke(97)
             destWB.Close(SaveChanges:=False)
-            ExcelHelper.ReleaseComObject(destWB)
+            ExcelInteropHelper.ReleaseComObject(destWB)
             destWB = Nothing
 
             excelApp.Quit()
-            ExcelHelper.ReleaseComObject(excelApp)
+            ExcelInteropHelper.ReleaseComObject(excelApp)
             excelApp = Nothing
 
             reportProgress?.Invoke(100)
@@ -57,7 +57,7 @@ Public Class ExcelMerger
                 Catch
                 End Try
 
-                ExcelHelper.ReleaseComObject(destWB)
+                ExcelInteropHelper.ReleaseComObject(destWB)
             End If
 
             If excelApp IsNot Nothing Then
@@ -66,7 +66,7 @@ Public Class ExcelMerger
                 Catch
                 End Try
 
-                ExcelHelper.ReleaseComObject(excelApp)
+                ExcelInteropHelper.ReleaseComObject(excelApp)
             End If
 
             If messageFilter IsNot Nothing Then
@@ -82,10 +82,10 @@ Public Class ExcelMerger
 
         Dim excelApp As Excel.Application = Nothing
         Dim destWB As Excel.Workbook = Nothing
-        Dim messageFilter As ExcelHelper.ExcelMessageFilterScope = Nothing
+        Dim messageFilter As ExcelInteropHelper.ExcelMessageFilterScope = Nothing
 
         Try
-            messageFilter = New ExcelHelper.ExcelMessageFilterScope()
+            messageFilter = New ExcelInteropHelper.ExcelMessageFilterScope()
 
             reportStatus?.Invoke("Opening workbook...")
             reportProgress?.Invoke(0)
@@ -98,15 +98,15 @@ Public Class ExcelMerger
             reportStatus?.Invoke("Merging files...")
 
             MergeSheets(excelApp, destWB, targets, reportProgress, 5, 40)
-            ExcelFileCreator.RemovePlaceholderSheets(destWB)
+            ExcelWorkbookCreator.RemovePlaceholderSheets(destWB)
 
             reportStatus?.Invoke("Sorting worksheets...")
 
-            Dim sorter As New ExcelSorter()
+            Dim sorter As New ExcelWorkbookSorter()
             sorter.SortSheets(destWB, reportProgress, reportStatus, progressStart:=40, progressEnd:=80)
 
             reportStatus?.Invoke("Resetting worksheet cursors...")
-            ExcelHelper.ResetWorksheetCursors(destWB, reportProgress, 80, 94)
+            ExcelInteropHelper.ResetWorksheetCursors(destWB, reportProgress, 80, 94)
 
             reportProgress?.Invoke(94)
             reportStatus?.Invoke("Saving workbook...")
@@ -115,11 +115,11 @@ Public Class ExcelMerger
             reportStatus?.Invoke("Closing workbook...")
             reportProgress?.Invoke(97)
             destWB.Close(SaveChanges:=False)
-            ExcelHelper.ReleaseComObject(destWB)
+            ExcelInteropHelper.ReleaseComObject(destWB)
             destWB = Nothing
 
             excelApp.Quit()
-            ExcelHelper.ReleaseComObject(excelApp)
+            ExcelInteropHelper.ReleaseComObject(excelApp)
             excelApp = Nothing
 
             reportProgress?.Invoke(100)
@@ -134,7 +134,7 @@ Public Class ExcelMerger
                 Catch
                 End Try
 
-                ExcelHelper.ReleaseComObject(destWB)
+                ExcelInteropHelper.ReleaseComObject(destWB)
             End If
 
             If excelApp IsNot Nothing Then
@@ -143,7 +143,7 @@ Public Class ExcelMerger
                 Catch
                 End Try
 
-                ExcelHelper.ReleaseComObject(excelApp)
+                ExcelInteropHelper.ReleaseComObject(excelApp)
             End If
 
             If messageFilter IsNot Nothing Then
@@ -195,10 +195,10 @@ Public Class ExcelMerger
                     End Try
                 End If
 
-                ExcelHelper.ReleaseComObject(copiedSheet)
-                ExcelHelper.ReleaseComObject(wsToCopy)
-                ExcelHelper.ReleaseComObject(sheets)
-                ExcelHelper.ReleaseComObject(sourceWB)
+                ExcelInteropHelper.ReleaseComObject(copiedSheet)
+                ExcelInteropHelper.ReleaseComObject(wsToCopy)
+                ExcelInteropHelper.ReleaseComObject(sheets)
+                ExcelInteropHelper.ReleaseComObject(sourceWB)
             End Try
 
             index += 1
@@ -238,13 +238,13 @@ Public Class ExcelMerger
                         Return True
                     End If
                 Finally
-                    ExcelHelper.ReleaseComObject(ws)
+                    ExcelInteropHelper.ReleaseComObject(ws)
                 End Try
             Next
 
             Return False
         Finally
-            ExcelHelper.ReleaseComObject(sheets)
+            ExcelInteropHelper.ReleaseComObject(sheets)
         End Try
     End Function
 

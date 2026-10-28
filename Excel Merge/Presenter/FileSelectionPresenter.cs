@@ -213,7 +213,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var merger = new ExcelMerger();
+            var merger = new ExcelWorkbookMerger();
 
             merger.MergeFiles(baseFile: model.ExistingBaseFilePath, targets: model.TargetFilePaths.ToList(), reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -223,7 +223,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var merger = new ExcelMerger();
+            var merger = new ExcelWorkbookMerger();
 
             merger.MergeAndSortFiles(baseFile: model.ExistingBaseFilePath, targets: model.TargetFilePaths.ToList(), reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -233,7 +233,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var sorter = new ExcelSorter();
+            var sorter = new ExcelWorkbookSorter();
 
             sorter.SortSheets(filePath: model.ExistingBaseFilePath, reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -243,7 +243,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
+            string createdFilePath = ExcelWorkbookCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
 
@@ -280,7 +280,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var templateHandler = new ExcelTemplateHandler();
+            var templateHandler = new ExcelWorksheetTemplateMerger();
 
             templateHandler.AddCoverPage(
                 baseFile: model.ExistingBaseFilePath,
@@ -294,7 +294,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var templateHandler = new ExcelTemplateHandler();
+            var templateHandler = new ExcelWorksheetTemplateMerger();
 
             templateHandler.AddSummaryPage(
                 baseFile: model.ExistingBaseFilePath,
@@ -402,26 +402,5 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.SetSortButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFileButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFolderButtonEnabled(e.HasDirectoryPath);
-    }
-
-    private string BuildExceptionMessage(Exception ex)
-    {
-        var messages = new List<string>();
-        var current = ex;
-        int level = 0;
-
-        while (current != null)
-        {
-            messages.Add(
-                $"Level {level}: {current.GetType().FullName}\n" +
-                $"Message: {current.Message}\n" +
-                $"HRESULT: 0x{current.HResult:X8}\n" +
-                $"Stack Trace:\n{current.StackTrace}");
-
-            current = current.InnerException;
-            level++;
-        }
-
-        return string.Join(Environment.NewLine + Environment.NewLine, messages);
     }
 }
