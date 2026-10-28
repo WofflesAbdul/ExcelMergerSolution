@@ -31,7 +31,6 @@ Public Class ExcelTemplateHandler
         Dim templateWorkbook As Excel.Workbook = Nothing
         Dim coverSheet As Excel.Worksheet = Nothing
         Dim targetSheets As Excel.Sheets = Nothing
-        Dim firstSheet As Object = Nothing
         Dim targetWorksheet As Excel.Worksheet = Nothing
 
         Try
@@ -62,7 +61,10 @@ Public Class ExcelTemplateHandler
                     End If
                 Next
             Finally
-                If targetWorksheet IsNot Nothing Then Marshal.ReleaseComObject(targetWorksheet)
+                If targetWorksheet IsNot Nothing Then
+                    Marshal.ReleaseComObject(targetWorksheet)
+                    targetWorksheet = Nothing
+                End If
             End Try
 
             reportProgress?.Invoke(35)
@@ -78,10 +80,8 @@ Public Class ExcelTemplateHandler
             reportProgress?.Invoke(60)
             reportStatus?.Invoke("Copying cover page...")
 
-            targetSheets = TryCast(targetWorkbook.Worksheets, Excel.Sheets)
-            firstSheet = targetSheets(1)
-
-            coverSheet.Copy(Before:=firstSheet)
+            targetSheets = targetWorkbook.Worksheets
+            CopyHeaderWorksheet(coverSheet, targetSheets, coverSheetName)
 
             reportProgress?.Invoke(80)
             reportStatus?.Invoke("Saving workbook...")
@@ -92,16 +92,15 @@ Public Class ExcelTemplateHandler
             reportStatus?.Invoke("Cover page added successfully.")
         Finally
             If targetWorksheet IsNot Nothing Then Marshal.ReleaseComObject(targetWorksheet)
-            If firstSheet IsNot Nothing Then Marshal.ReleaseComObject(firstSheet)
-            If targetSheets IsNot Nothing Then Marshal.ReleaseComObject(targetSheets)
             If coverSheet IsNot Nothing Then Marshal.ReleaseComObject(coverSheet)
+            If targetSheets IsNot Nothing Then Marshal.ReleaseComObject(targetSheets)
 
             If templateWorkbook IsNot Nothing Then
                 Try
                     Thread.Sleep(200)
                     templateWorkbook.Close(SaveChanges:=False)
                 Catch
-                    ' Excel may reject the close request while busy.
+                    ' Continue cleanup if Excel rejects the close request.
                 Finally
                     Marshal.ReleaseComObject(templateWorkbook)
                 End Try
@@ -151,7 +150,6 @@ Public Class ExcelTemplateHandler
         Dim targetSheets As Excel.Sheets = Nothing
         Dim templateSheets As Excel.Sheets = Nothing
         Dim targetWorksheet As Excel.Worksheet = Nothing
-        Dim firstSheet As Object = Nothing
         Dim summarySheet As Excel.Worksheet = Nothing
         Dim lookupSheet As Excel.Worksheet = Nothing
         Dim targetSummary As Excel.Worksheet = Nothing
@@ -168,9 +166,9 @@ Public Class ExcelTemplateHandler
             reportStatus?.Invoke("Opening selected workbook...")
 
             excel = New Excel.Application With {
-            .Visible = False,
-            .DisplayAlerts = False
-        }
+                .Visible = False,
+                .DisplayAlerts = False
+            }
 
             targetWorkbook = excel.Workbooks.Open(baseFile)
 
@@ -183,8 +181,8 @@ Public Class ExcelTemplateHandler
                 targetWorksheet = TryCast(targetSheets(i), Excel.Worksheet)
 
                 If targetWorksheet IsNot Nothing AndAlso
-                (String.Equals(targetWorksheet.Name, "Summary", StringComparison.OrdinalIgnoreCase) OrElse
-                 String.Equals(targetWorksheet.Name, "Lookup", StringComparison.OrdinalIgnoreCase)) Then
+                    (String.Equals(targetWorksheet.Name, "Summary", StringComparison.OrdinalIgnoreCase) OrElse
+                     String.Equals(targetWorksheet.Name, "Lookup", StringComparison.OrdinalIgnoreCase)) Then
                     Throw New InvalidOperationException("The workbook already contains a Summary or Lookup worksheet.")
                 End If
 
@@ -210,20 +208,12 @@ Public Class ExcelTemplateHandler
             reportProgress?.Invoke(55)
             reportStatus?.Invoke("Copying lookup worksheet...")
 
-            firstSheet = targetSheets(1)
-            lookupSheet.Copy(Before:=firstSheet)
-
-            Marshal.ReleaseComObject(firstSheet)
-            firstSheet = Nothing
+            CopyHeaderWorksheet(lookupSheet, targetSheets, "Lookup")
 
             reportProgress?.Invoke(65)
             reportStatus?.Invoke("Copying summary worksheet...")
 
-            firstSheet = targetSheets(1)
-            summarySheet.Copy(Before:=firstSheet)
-
-            Marshal.ReleaseComObject(firstSheet)
-            firstSheet = Nothing
+            CopyHeaderWorksheet(summarySheet, targetSheets, "Summary")
 
             reportProgress?.Invoke(75)
             reportStatus?.Invoke("Repairing formulas and dropdown references...")
@@ -255,14 +245,14 @@ Public Class ExcelTemplateHandler
             Next
 
             definedName = targetWorkbook.Names.Add(
-            Name:="SlotLookup",
-            RefersTo:="=FlXProSlotInfoTable[Slot / Chassis]")
+                Name:="SlotLookup",
+                RefersTo:="=FlXProSlotInfoTable[Slot / Chassis]")
             Marshal.ReleaseComObject(definedName)
             definedName = Nothing
 
             definedName = targetWorkbook.Names.Add(
-            Name:="TestLookup",
-            RefersTo:="=TestItemTable[ITEMS]")
+                Name:="TestLookup",
+                RefersTo:="=TestItemTable[ITEMS]")
             Marshal.ReleaseComObject(definedName)
             definedName = Nothing
 
@@ -321,7 +311,6 @@ Public Class ExcelTemplateHandler
             If targetSummary IsNot Nothing Then Marshal.ReleaseComObject(targetSummary)
             If targetLookup IsNot Nothing Then Marshal.ReleaseComObject(targetLookup)
             If targetWorksheet IsNot Nothing Then Marshal.ReleaseComObject(targetWorksheet)
-            If firstSheet IsNot Nothing Then Marshal.ReleaseComObject(firstSheet)
             If summarySheet IsNot Nothing Then Marshal.ReleaseComObject(summarySheet)
             If lookupSheet IsNot Nothing Then Marshal.ReleaseComObject(lookupSheet)
             If templateSheets IsNot Nothing Then Marshal.ReleaseComObject(templateSheets)
@@ -357,6 +346,53 @@ Public Class ExcelTemplateHandler
                     Marshal.ReleaseComObject(excel)
                 End Try
             End If
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Copies a header worksheet into the destination workbook in header-priority order.
+    ''' </summary>
+    Private Sub CopyHeaderWorksheet(sourceSheet As Excel.Worksheet, targetSheets As Excel.Sheets, sheetName As String)
+        Dim insertionIndex As Integer = 1
+        Dim insertionSheet As Excel.Worksheet = Nothing
+
+        Try
+            Dim newPriority As Integer = HeaderSequence.GetHeaderPriority(sheetName)
+
+            For i As Integer = 1 To targetSheets.Count
+                Dim worksheet As Excel.Worksheet = Nothing
+
+                Try
+                    worksheet = CType(targetSheets.Item(i), Excel.Worksheet)
+
+                    Dim existingPriority As Integer = HeaderSequence.GetHeaderPriority(worksheet.Name)
+
+                    ' Header sheets are expected to be grouped at the beginning.
+                    If existingPriority = Integer.MaxValue Then
+                        Exit For
+                    End If
+
+                    ' Insert after headers of equal or higher priority.
+                    If existingPriority > newPriority Then
+                        insertionIndex = i
+                        Exit For
+                    End If
+
+                    insertionIndex = i + 1
+                Finally
+                    ExcelHelper.ReleaseComObject(worksheet)
+                End Try
+            Next
+
+            If insertionIndex > targetSheets.Count Then
+                insertionSheet = CType(targetSheets.Item(targetSheets.Count), Excel.Worksheet)
+                sourceSheet.Copy(After:=insertionSheet)
+            Else
+                insertionSheet = CType(targetSheets.Item(insertionIndex), Excel.Worksheet)
+                sourceSheet.Copy(Before:=insertionSheet)
+            End If
+        Finally
+            ExcelHelper.ReleaseComObject(insertionSheet)
         End Try
     End Sub
 
