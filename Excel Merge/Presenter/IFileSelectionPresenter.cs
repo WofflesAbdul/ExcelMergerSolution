@@ -44,4 +44,6 @@ public interface IFileSelectionPresenter
     string SelectSourceWorkbook();
 
     Task MergeCoverPageAction(string sourceFile);
+
+    Task MergeSummaryPageAction(string sourceFile);
 }

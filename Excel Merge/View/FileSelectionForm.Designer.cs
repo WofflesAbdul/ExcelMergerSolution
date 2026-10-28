@@ -588,6 +588,7 @@
             this.mergeSummaryPageToolStripMenuItem.Name = "mergeSummaryPageToolStripMenuItem";
             this.mergeSummaryPageToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
             this.mergeSummaryPageToolStripMenuItem.Text = "Merge Summary Page";
+            this.mergeSummaryPageToolStripMenuItem.Click += new System.EventHandler(this.MergeSummaryPageToolStripMenuItem_Click);
             // 
             // mergeTemplateFileToolStripMenuItem
             // 

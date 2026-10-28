@@ -245,8 +245,18 @@ public partial class FileSelectionForm : Form, IFileSelectionView
             return;
         }
 
-        await presenter.RunOperationAsync(
-            OperationRequested.MergeCoverPage,
-            () => presenter.MergeCoverPageAction(sourceFile));
+        await presenter.RunOperationAsync(OperationRequested.MergeCoverPage, () => presenter.MergeCoverPageAction(sourceFile));
+    }
+
+    private async void MergeSummaryPageToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string sourceFile = presenter.SelectSourceWorkbook();
+
+        if (string.IsNullOrWhiteSpace(sourceFile))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.MergeSummaryPage, () => presenter.MergeSummaryPageAction(sourceFile));
     }
 }

@@ -409,6 +409,19 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         });
     }
 
+    public Task MergeSummaryPageAction(string sourceFile)
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var merger = new ExcelWorksheetMergerSummaryPage();
+
+            merger.MergeSummaryPage(
+                baseFile: model.ExistingBaseFilePath,
+                sourceFile: sourceFile,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
 
     private static Task RunOnStaThreadAsync(Action action)
     {
