@@ -14,7 +14,6 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     private readonly FileSelectionModel model;
     private bool isRunning = false;
     private OperationRequested currentOperation = OperationRequested.None;
-    private CancellationTokenSource progressAnimationCts;
 
     public FileSelectionPresenter(FileSelectionModel model, IFileSelectionView view)
     {
@@ -132,15 +131,6 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     public void OnModelStateChanged(object sender, ModelStateChangedEventArgs e)
     {
         (view as Control)?.SafeInvoke(() => UpdateView(e));
-    }
-
-    private void OnReportMenuOpening(object sender, EventArgs e)
-    {
-        bool hasValidBaseFile = TargetFileMode == TargetFileMode.ExistingFile
-            && !string.IsNullOrWhiteSpace(model.ExistingBaseFilePath)
-            && File.Exists(model.ExistingBaseFilePath);
-
-        view.SetReportActionsEnabled(hasValidBaseFile);
     }
 
     public async Task RunOperationAsync(OperationRequested op, Func<Task> action)
@@ -303,9 +293,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         });
     }
 
-    public void DownloadTemplateFile()
+    public string SelectTemplateDestination()
     {
-        using (SaveFileDialog dialog = new SaveFileDialog())
+        using (var dialog = new SaveFileDialog())
         {
             dialog.Title = "Download Report Template";
             dialog.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
@@ -314,57 +304,58 @@ public class FileSelectionPresenter : IFileSelectionPresenter
             dialog.AddExtension = true;
             dialog.OverwritePrompt = true;
 
-            if (dialog.ShowDialog() != DialogResult.OK)
-                return;
+            return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
+        }
+    }
 
-            string destinationPath = dialog.FileName;
-            string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx");
+    public async Task DownloadTemplateFileAsync(string destinationPath)
+    {
+        string templatePath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Resource",
+            "DvtReportTemplate.xltx");
 
-            if (!File.Exists(templatePath))
-            {
-                view.ShowError("Template Not Found", new FileNotFoundException("The report template could not be found.", templatePath));
-                return;
-            }
+        if (!File.Exists(templatePath))
+        {
+            throw new FileNotFoundException(
+                "The report template could not be found.",
+                templatePath);
+        }
+
+        await RunOnStaThreadAsync(() =>
+        {
+            Microsoft.Office.Interop.Excel.Application excel = null;
+            Microsoft.Office.Interop.Excel.Workbook workbook = null;
 
             try
             {
-                RunOnStaThreadAsync(() =>
+                excel = new Microsoft.Office.Interop.Excel.Application
                 {
-                    Microsoft.Office.Interop.Excel.Application excel = null;
-                    Microsoft.Office.Interop.Excel.Workbook workbook = null;
+                    Visible = false,
+                    DisplayAlerts = false
+                };
 
-                    try
-                    {
-                        excel = new Microsoft.Office.Interop.Excel.Application
-                        {
-                            Visible = false,
-                            DisplayAlerts = false
-                        };
+                workbook = excel.Workbooks.Open(templatePath);
 
-                        workbook = excel.Workbooks.Open(templatePath);
-                        workbook.SaveAs(destinationPath, Microsoft.Office.Interop.Excel.XlFileFormat.xlOpenXMLWorkbook);
-                    }
-                    finally
-                    {
-                        if (workbook != null)
-                        {
-                            workbook.Close(false);
-                            System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
-                        }
-
-                        if (excel != null)
-                        {
-                            excel.Quit();
-                            System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
-                        }
-                    }
-                }).GetAwaiter().GetResult();
+                workbook.SaveAs(
+                    destinationPath,
+                    Microsoft.Office.Interop.Excel.XlFileFormat.xlOpenXMLWorkbook);
             }
-            catch (Exception ex)
+            finally
             {
-                view.ShowError("Download Template Failed", ex);
+                if (workbook != null)
+                {
+                    workbook.Close(false);
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                }
+
+                if (excel != null)
+                {
+                    excel.Quit();
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
+                }
             }
-        }
+        });
     }
 
     public string SelectSourceWorkbook()
@@ -457,5 +448,14 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.SetSortButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFileButtonEnabled(e.HasValidBaseFile);
         view.SetOpenFolderButtonEnabled(e.HasDirectoryPath);
+    }
+
+    private void OnReportMenuOpening(object sender, EventArgs e)
+    {
+        bool hasValidBaseFile = TargetFileMode == TargetFileMode.ExistingFile
+            && !string.IsNullOrWhiteSpace(model.ExistingBaseFilePath)
+            && File.Exists(model.ExistingBaseFilePath);
+
+        view.SetReportActionsEnabled(hasValidBaseFile);
     }
 }

@@ -7,6 +7,7 @@
     CreateNewFile,
     AddCoverPage,
     AddSummaryPage,
+    DownloadTemplateFile,
     MergeCoverPage,
     MergeSummaryPage,
     MergeTemplateFile,

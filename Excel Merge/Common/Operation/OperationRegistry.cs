@@ -44,6 +44,13 @@ public static class OperationRegistry
         "Error: Failed to add summary page!"
     );
 
+    public static readonly OperationInfo DownloadTemplateFile = new OperationInfo(
+        OperationRequested.DownloadTemplateFile,
+        "Status: Downloading template file...",
+        "Completed: Template file downloaded successfully!",
+        "Error: Failed to download template file!"
+    );
+
     public static readonly OperationInfo MergeCoverPage = new OperationInfo(
         OperationRequested.MergeCoverPage,
         "Status: Merging cover page...",
@@ -75,6 +82,7 @@ public static class OperationRegistry
             case OperationRequested.CreateNewFile: return CreateNewFile;
             case OperationRequested.AddCoverPage: return AddCoverPage;
             case OperationRequested.AddSummaryPage: return AddSummaryPage;
+            case OperationRequested.DownloadTemplateFile: return DownloadTemplateFile;
             case OperationRequested.MergeCoverPage: return MergeCoverPage;
             case OperationRequested.MergeSummaryPage: return MergeSummaryPage;
             case OperationRequested.MergeTemplateFile: return MergeTemplateFile;

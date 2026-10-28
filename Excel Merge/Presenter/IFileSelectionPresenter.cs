@@ -39,7 +39,9 @@ public interface IFileSelectionPresenter
 
     Task AddSummaryPageAction();
 
-    void DownloadTemplateFile();
+    string SelectTemplateDestination();
+
+    Task DownloadTemplateFileAsync(string destinationPath);
 
     string SelectSourceWorkbook();
 

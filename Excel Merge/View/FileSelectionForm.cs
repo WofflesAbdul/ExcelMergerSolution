@@ -234,7 +234,17 @@ public partial class FileSelectionForm : Form, IFileSelectionView
 
     private async void AddSummaryPageToolStripMenuItem_Click(object sender, EventArgs e) => await presenter.RunOperationAsync(OperationRequested.AddSummaryPage, presenter.AddSummaryPageAction);
 
-    private void DownloadTemplateFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.DownloadTemplateFile();
+    private async void DownloadTemplateFileToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string destinationPath = presenter.SelectTemplateDestination();
+
+        if (string.IsNullOrWhiteSpace(destinationPath))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.DownloadTemplateFile, () => presenter.DownloadTemplateFileAsync(destinationPath));
+    }
 
     private async void MergeCoverPageToolStripMenuItem_Click(object sender, EventArgs e)
     {
