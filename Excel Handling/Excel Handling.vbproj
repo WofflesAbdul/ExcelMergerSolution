@@ -69,9 +69,10 @@
     <Compile Include="Interop\ExcelInteropHelper.vb" />
     <Compile Include="Operations\Workbook\ExcelWorkbookCreator.vb" />
     <Compile Include="Operations\Workbook\ExcelWorkbookMerger.vb" />
-    <Compile Include="Operations\Worksheets\ExcelWorksheetTemplateMerger.vb" />
+    <Compile Include="Operations\Worksheets\ExcelWorksheetAdderCoverPage.vb" />
     <Compile Include="Operations\Workbook\ExcelWorkbookSorter.vb" />
-    <Compile Include="Operations\Worksheets\ExcelWorksheetHeaderInserter.vb" />
+    <Compile Include="Operations\Worksheets\ExcelWorksheetAdderSummaryPage.vb" />
+    <Compile Include="Utilities\ExcelWorksheetHeaderInserter.vb" />
     <Compile Include="Sorting\HeaderSequence.vb" />
     <Compile Include="Sorting\TemperatureSequence.vb" />
     <Compile Include="Sorting\VoltageOutputSequence.vb" />

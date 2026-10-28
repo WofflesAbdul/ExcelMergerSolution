@@ -280,9 +280,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var templateHandler = new ExcelWorksheetTemplateMerger();
+            var coverPageAdder = new ExcelWorksheetAdderCoverPage();
 
-            templateHandler.AddCoverPage(
+            coverPageAdder.AddCoverPage(
                 baseFile: model.ExistingBaseFilePath,
                 templateFile: Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx"),
                 reportProgress: percent => view.SetProgress(percent),
@@ -294,9 +294,9 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var templateHandler = new ExcelWorksheetTemplateMerger();
+            var summaryPageAdder = new ExcelWorksheetAdderSummaryPage();
 
-            templateHandler.AddSummaryPage(
+            summaryPageAdder.AddSummaryPage(
                 baseFile: model.ExistingBaseFilePath,
                 templateFile: Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resource", "DvtReportTemplate.xltx"),
                 reportProgress: percent => view.SetProgress(percent),
