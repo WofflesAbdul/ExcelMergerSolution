@@ -5,4 +5,10 @@
     Sort,
     MergeAndSort,
     CreateNewFile,
+    AddCoverPage,
+    AddSummaryPage,
+    DownloadTemplateFile,
+    MergeCoverPage,
+    MergeSummaryPage,
+    MergeReportWorkbook,
 }

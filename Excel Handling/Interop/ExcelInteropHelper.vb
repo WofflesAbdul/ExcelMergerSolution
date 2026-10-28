@@ -1,8 +1,11 @@
 ﻿Imports System.Runtime.InteropServices
 Imports System.Threading
-Imports Microsoft.Office.Interop
+Imports Excel = Microsoft.Office.Interop.Excel
 
-Public NotInheritable Class ExcelHelper
+''' <summary>
+''' Provides shared Excel Interop utilities.
+''' </summary>
+Public NotInheritable Class ExcelInteropHelper
 
     <ComImport>
     <Guid("00000016-0000-0000-C000-000000000046")>
@@ -32,9 +35,7 @@ Public NotInheritable Class ExcelHelper
 
             Const SERVERCALL_RETRYLATER As Integer = 2
 
-            If rejectType = SERVERCALL_RETRYLATER AndAlso tickCount < 10000 Then
-                Return 250
-            End If
+            If rejectType = SERVERCALL_RETRYLATER AndAlso tickCount < 10000 Then Return 250
 
             Return -1
         End Function
@@ -50,6 +51,9 @@ Public NotInheritable Class ExcelHelper
     Private Shared Function CoRegisterMessageFilter(newFilter As IMessageFilter, ByRef oldFilter As IMessageFilter) As Integer
     End Function
 
+    ''' <summary>
+    ''' Registers an Excel message filter for the lifetime of the scope.
+    ''' </summary>
     Public NotInheritable Class ExcelMessageFilterScope
         Implements IDisposable
 
@@ -64,9 +68,7 @@ Public NotInheritable Class ExcelHelper
             Dim filter As IMessageFilter = New ExcelMessageFilter()
             Dim hr As Integer = CoRegisterMessageFilter(filter, previousFilter)
 
-            If hr < 0 Then
-                Marshal.ThrowExceptionForHR(hr)
-            End If
+            If hr < 0 Then Marshal.ThrowExceptionForHR(hr)
         End Sub
 
         Public Sub Dispose() Implements IDisposable.Dispose
@@ -77,14 +79,25 @@ Public NotInheritable Class ExcelHelper
             Dim ignoredFilter As IMessageFilter = Nothing
             Dim hr As Integer = CoRegisterMessageFilter(previousFilter, ignoredFilter)
 
-            If hr < 0 Then
-                Marshal.ThrowExceptionForHR(hr)
-            End If
+            If hr < 0 Then Marshal.ThrowExceptionForHR(hr)
         End Sub
     End Class
 
-    Public Shared Sub ResetWorksheetCursors(workbook As Excel.Workbook, Optional reportProgress As Action(Of Integer) = Nothing, Optional progressStart As Integer = 0, Optional progressEnd As Integer = 100)
+    ''' <summary>
+    ''' Releases one COM reference without allowing cleanup errors to interrupt other cleanup.
+    ''' </summary>
+    Public Shared Sub ReleaseComObject(obj As Object)
+        Try
+            If obj IsNot Nothing AndAlso Marshal.IsComObject(obj) Then Marshal.ReleaseComObject(obj)
+        Catch
+            ' Continue cleanup if the COM object has already been released.
+        End Try
+    End Sub
 
+    ''' <summary>
+    ''' Activates each worksheet, selects cell A1, and returns to the first worksheet.
+    ''' </summary>
+    Public Shared Sub ResetWorksheetCursors(workbook As Excel.Workbook, Optional reportProgress As Action(Of Integer) = Nothing, Optional progressStart As Integer = 0, Optional progressEnd As Integer = 100)
         If workbook Is Nothing Then Throw New ArgumentNullException(NameOf(workbook))
 
         Dim firstSheet As Excel.Worksheet = Nothing
@@ -111,8 +124,7 @@ Public NotInheritable Class ExcelHelper
                         sheet = Nothing
                     End If
 
-                    Dim currentSheet As Excel.Worksheet =
-                    If(i = 1, firstSheet, sheet)
+                    Dim currentSheet As Excel.Worksheet = If(i = 1, firstSheet, sheet)
 
                     Try
                         currentSheet.Activate()
@@ -121,18 +133,12 @@ Public NotInheritable Class ExcelHelper
                     Catch
                         ' Continue if Excel cannot select A1 on this worksheet.
                     End Try
-
                 Finally
                     ReleaseComObject(cell)
                     ReleaseComObject(sheet)
                 End Try
 
-                Dim progress As Integer =
-                progressStart +
-                CInt(Math.Floor(
-                    CDbl(i) / totalSheets *
-                    (progressEnd - progressStart)))
-
+                Dim progress As Integer = progressStart + CInt(Math.Floor(CDbl(i) / totalSheets * (progressEnd - progressStart)))
                 reportProgress?.Invoke(Math.Min(progress, progressEnd))
             Next
 
@@ -143,19 +149,9 @@ Public NotInheritable Class ExcelHelper
                     ' Do not prevent saving if Excel cannot activate the first worksheet.
                 End Try
             End If
-
         Finally
             ReleaseComObject(firstSheet)
             ReleaseComObject(sheets)
-        End Try
-    End Sub
-
-    Public Shared Sub ReleaseComObject(obj As Object)
-        Try
-            If obj IsNot Nothing AndAlso Marshal.IsComObject(obj) Then
-                Marshal.ReleaseComObject(obj)
-            End If
-        Catch
         End Try
     End Sub
 

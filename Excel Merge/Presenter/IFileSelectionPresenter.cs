@@ -34,4 +34,20 @@ public interface IFileSelectionPresenter
     Task CreateNewFileAction();
 
     void LoadLastFile();
+
+    Task AddCoverPageAction();
+
+    Task AddSummaryPageAction();
+
+    string SelectTemplateDestination();
+
+    Task DownloadTemplateFileAsync(string destinationPath);
+
+    string SelectSourceWorkbook();
+
+    Task MergeCoverPageAction(string sourceFile);
+
+    Task MergeSummaryPageAction(string sourceFile);
+
+    Task MergeReportWorkbookAction(string sourceFile);
 }

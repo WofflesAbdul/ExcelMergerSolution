@@ -13,7 +13,6 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     private readonly IFileSelectionPresenter presenter;
     private readonly List<Control> controlsToDisable = new List<Control>();
     private readonly List<ToolStripDropDownButton> toolStripButtonsToDisable = new List<ToolStripDropDownButton>();
-    private CancellationTokenSource progressAnimationCts;
 
     public FileSelectionForm()
     {
@@ -24,6 +23,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
         toolStripButtonsToDisable.AddRange(new ToolStripDropDownButton[] { toolStripDropDownButtonFile });
 
         rbUseExistingFile.Checked = true;
+
+        toolStripDropDownButton.DropDownOpening += (sender, e) => ReportMenuOpening?.Invoke(this, EventArgs.Empty);
     }
 
     public event EventHandler ResetRequested;
@@ -31,6 +32,8 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     public event EventHandler OpenFileClicked;
 
     public event EventHandler OpenFolderClicked;
+
+    public event EventHandler ReportMenuOpening;
 
     public event EventHandler<TargetFileMode> TargetFileModeChanged;
 
@@ -112,6 +115,16 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     }
 
     public void NewFileCreated() => rbUseExistingFile.Checked = true;
+
+    public void SetReportActionsEnabled(bool enabled)
+    {
+        addCoverPageToolStripMenuItem.Enabled = enabled;
+        addSummaryPageToolStripMenuItem.Enabled = enabled;
+        mergeCoverPageToolStripMenuItem.Enabled = enabled;
+        mergeSummaryPageToolStripMenuItem.Enabled = enabled;
+        mergeReportWorkbookToolStripMenuItem.Enabled = enabled;
+        downloadTemplateFileToolStripMenuItem.Enabled = true;
+    }
 
     public void ShowError(string title, Exception ex) => ExceptionDialog.Show(this, ex);
 
@@ -216,4 +229,56 @@ public partial class FileSelectionForm : Form, IFileSelectionView
     }
 
     private void LoadLastFileToolStripMenuItem_Click(object sender, EventArgs e) => presenter.LoadLastFile();
+
+    private async void AddCoverPageToolStripMenuItem_Click(object sender, EventArgs e) => await presenter.RunOperationAsync(OperationRequested.AddCoverPage, presenter.AddCoverPageAction);
+
+    private async void AddSummaryPageToolStripMenuItem_Click(object sender, EventArgs e) => await presenter.RunOperationAsync(OperationRequested.AddSummaryPage, presenter.AddSummaryPageAction);
+
+    private async void DownloadTemplateFileToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string destinationPath = presenter.SelectTemplateDestination();
+
+        if (string.IsNullOrWhiteSpace(destinationPath))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.DownloadTemplateFile, () => presenter.DownloadTemplateFileAsync(destinationPath));
+    }
+
+    private async void MergeCoverPageToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string sourceFile = presenter.SelectSourceWorkbook();
+
+        if (string.IsNullOrWhiteSpace(sourceFile))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.MergeCoverPage, () => presenter.MergeCoverPageAction(sourceFile));
+    }
+
+    private async void MergeSummaryPageToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string sourceFile = presenter.SelectSourceWorkbook();
+
+        if (string.IsNullOrWhiteSpace(sourceFile))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.MergeSummaryPage, () => presenter.MergeSummaryPageAction(sourceFile));
+    }
+
+    private async void MergeReportWorkbookToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        string sourceFile = presenter.SelectSourceWorkbook();
+
+        if (string.IsNullOrWhiteSpace(sourceFile))
+        {
+            return;
+        }
+
+        await presenter.RunOperationAsync(OperationRequested.MergeReportWorkbook, () => presenter.MergeReportWorkbookAction(sourceFile));
+    }
 }

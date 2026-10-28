@@ -1,7 +1,7 @@
 ﻿Imports System.IO
 Imports Microsoft.Office.Interop
 
-Public NotInheritable Class ExcelFileCreator
+Public NotInheritable Class ExcelWorkbookCreator
 
     Private Shared ReadOnly PlaceholderNames As String() = {"Placeholder", "Sheet1", "Sheet2", "Sheet3"}
 
@@ -26,7 +26,7 @@ Public NotInheritable Class ExcelFileCreator
         Dim wb As Excel.Workbook = Nothing
 
         Try
-            Using filterScope As New ExcelHelper.ExcelMessageFilterScope()
+            Using filterScope As New ExcelInteropHelper.ExcelMessageFilterScope()
                 excelApp = New Excel.Application()
                 excelApp.DisplayAlerts = False
 
@@ -35,7 +35,7 @@ Public NotInheritable Class ExcelFileCreator
 
                 wb.SaveAs(fullPath)
                 wb.Close(SaveChanges:=False)
-                ExcelHelper.ReleaseComObject(wb)
+                ExcelInteropHelper.ReleaseComObject(wb)
                 wb = Nothing
             End Using
 
@@ -52,11 +52,11 @@ Public NotInheritable Class ExcelFileCreator
                 Catch
                     ' Preserve the original exception.
                 Finally
-                    ExcelHelper.ReleaseComObject(wb)
+                    ExcelInteropHelper.ReleaseComObject(wb)
                 End Try
             End If
 
-            ExcelHelper.ReleaseComObject(workbooks)
+            ExcelInteropHelper.ReleaseComObject(workbooks)
 
             If excelApp IsNot Nothing Then
                 Try
@@ -64,7 +64,7 @@ Public NotInheritable Class ExcelFileCreator
                 Catch
                     ' Preserve the original exception.
                 Finally
-                    ExcelHelper.ReleaseComObject(excelApp)
+                    ExcelInteropHelper.ReleaseComObject(excelApp)
                 End Try
             End If
         End Try
@@ -89,12 +89,12 @@ Public NotInheritable Class ExcelFileCreator
                     End If
 
                 Finally
-                    ExcelHelper.ReleaseComObject(ws)
+                    ExcelInteropHelper.ReleaseComObject(ws)
                 End Try
             Next
 
         Finally
-            ExcelHelper.ReleaseComObject(sheets)
+            ExcelInteropHelper.ReleaseComObject(sheets)
         End Try
     End Sub
 

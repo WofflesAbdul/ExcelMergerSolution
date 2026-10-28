@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,7 +14,6 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     private readonly FileSelectionModel model;
     private bool isRunning = false;
     private OperationRequested currentOperation = OperationRequested.None;
-    private CancellationTokenSource progressAnimationCts;
 
     public FileSelectionPresenter(FileSelectionModel model, IFileSelectionView view)
     {
@@ -28,6 +26,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.OpenFileClicked += OnOpenFileClicked;
         view.OpenFolderClicked += OnOpenFolderClicked;
         view.TargetFileModeChanged += OnTargetFileModeChanged;
+        view.ReportMenuOpening += OnReportMenuOpening;
 
         view.ResetRequested += OnReset;
     }
@@ -203,7 +202,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var merger = new ExcelMerger();
+            var merger = new ExcelWorkbookMerger();
 
             merger.MergeFiles(baseFile: model.ExistingBaseFilePath, targets: model.TargetFilePaths.ToList(), reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -213,18 +212,17 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            var merger = new ExcelMerger();
+            var merger = new ExcelWorkbookMerger();
 
             merger.MergeAndSortFiles(baseFile: model.ExistingBaseFilePath, targets: model.TargetFilePaths.ToList(), reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
     }
 
-
     public Task SortAction()
     {
         return RunOnStaThreadAsync(() =>
         {
-            var sorter = new ExcelSorter();
+            var sorter = new ExcelWorkbookSorter();
 
             sorter.SortSheets(filePath: model.ExistingBaseFilePath, reportProgress: percent => view.SetProgress(percent), reportStatus: message => view.SetOngoingStatus(message));
         });
@@ -234,7 +232,7 @@ public class FileSelectionPresenter : IFileSelectionPresenter
     {
         return RunOnStaThreadAsync(() =>
         {
-            string createdFilePath = ExcelFileCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
+            string createdFilePath = ExcelWorkbookCreator.CreateNewExcel(directoryPath: model.DirectoryPath, fileName: model.NewFileName);
 
             (view as Control)?.SafeInvoke(() => view.NewFileCreated());
 
@@ -265,6 +263,186 @@ public class FileSelectionPresenter : IFileSelectionPresenter
                 model.DirectoryPath = Path.GetDirectoryName(lastSavedFile);
                 break;
         }
+    }
+
+
+    public Task AddCoverPageAction()
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var adder = new ExcelWorksheetAdderCoverPage();
+
+            adder.AddCoverPage(
+                baseFile: model.ExistingBaseFilePath,
+                templateFile: GetReportTemplatePath(),
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
+
+    public Task AddSummaryPageAction()
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var adder = new ExcelWorksheetAdderSummaryPage();
+
+            adder.AddSummaryPage(
+                baseFile: model.ExistingBaseFilePath,
+                templateFile: GetReportTemplatePath(),
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
+
+    public string SelectTemplateDestination()
+    {
+        using (var dialog = new SaveFileDialog())
+        {
+            dialog.Title = "Download Report Template";
+            dialog.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dialog.FileName = "DvtReportTemplate.xlsx";
+            dialog.DefaultExt = "xlsx";
+            dialog.AddExtension = true;
+            dialog.OverwritePrompt = true;
+
+            return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
+        }
+    }
+
+    public async Task DownloadTemplateFileAsync(string destinationPath)
+    {
+        string templatePath = GetReportTemplatePath();
+
+        if (!File.Exists(templatePath))
+        {
+            throw new FileNotFoundException(
+                "The report template could not be found.",
+                templatePath);
+        }
+
+        await RunOnStaThreadAsync(() =>
+        {
+            Microsoft.Office.Interop.Excel.Application excel = null;
+            Microsoft.Office.Interop.Excel.Workbook workbook = null;
+
+            try
+            {
+                excel = new Microsoft.Office.Interop.Excel.Application
+                {
+                    Visible = false,
+                    DisplayAlerts = false
+                };
+
+                workbook = excel.Workbooks.Open(templatePath);
+
+                workbook.SaveAs(
+                    destinationPath,
+                    Microsoft.Office.Interop.Excel.XlFileFormat.xlOpenXMLWorkbook);
+            }
+            finally
+            {
+                if (workbook != null)
+                {
+                    try
+                    {
+                        workbook.Close(SaveChanges: false);
+                    }
+                    finally
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                    }
+                }
+
+                if (excel != null)
+                {
+                    try
+                    {
+                        excel.Quit();
+                    }
+                    finally
+                    {
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(excel);
+                    }
+                }
+            }
+        });
+    }
+
+    public string SelectSourceWorkbook()
+    {
+        using (var dialog = new OpenFileDialog())
+        {
+            dialog.Filter = "Excel Workbooks (*.xlsx;*.xlsm;*.xls)|*.xlsx;*.xlsm;*.xls";
+            dialog.Title = "Select Source Workbook";
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.ExistingBaseFilePath) &&
+                string.Equals(
+                    Path.GetFullPath(dialog.FileName),
+                    Path.GetFullPath(model.ExistingBaseFilePath),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(
+                    "The source workbook must be different from the destination workbook.",
+                    "Invalid Source Workbook",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return null;
+            }
+
+            return dialog.FileName;
+        }
+    }
+
+    public Task MergeCoverPageAction(string sourceFile)
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var merger = new ExcelWorksheetMergerCoverPage();
+
+            merger.MergeCoverPage(
+                baseFile: model.ExistingBaseFilePath,
+                sourceFile: sourceFile,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
+
+    public Task MergeSummaryPageAction(string sourceFile)
+    {
+        return RunOnStaThreadAsync(() =>
+        {
+            var merger = new ExcelWorksheetMergerSummaryPage();
+
+            merger.MergeSummaryPage(
+                baseFile: model.ExistingBaseFilePath,
+                sourceFile: sourceFile,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message));
+        });
+    }
+
+    public Task MergeReportWorkbookAction(string sourceFile)
+    {
+        return RunOnStaThreadAsync(() =>
+            ExcelWorksheetMergerReport.MergeReportWorkbook(
+                destinationFile: model.ExistingBaseFilePath,
+                sourceFile: sourceFile,
+                reportProgress: percent => view.SetProgress(percent),
+                reportStatus: message => view.SetOngoingStatus(message)));
+    }
+
+    private static string GetReportTemplatePath()
+    {
+        return Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Resource",
+            "DvtReportTemplate.xltx");
     }
 
     private static Task RunOnStaThreadAsync(Action action)
@@ -303,24 +481,12 @@ public class FileSelectionPresenter : IFileSelectionPresenter
         view.SetOpenFolderButtonEnabled(e.HasDirectoryPath);
     }
 
-    private string BuildExceptionMessage(Exception ex)
+    private void OnReportMenuOpening(object sender, EventArgs e)
     {
-        var messages = new List<string>();
-        var current = ex;
-        int level = 0;
+        bool hasValidBaseFile = TargetFileMode == TargetFileMode.ExistingFile
+            && !string.IsNullOrWhiteSpace(model.ExistingBaseFilePath)
+            && File.Exists(model.ExistingBaseFilePath);
 
-        while (current != null)
-        {
-            messages.Add(
-                $"Level {level}: {current.GetType().FullName}\n" +
-                $"Message: {current.Message}\n" +
-                $"HRESULT: 0x{current.HResult:X8}\n" +
-                $"Stack Trace:\n{current.StackTrace}");
-
-            current = current.InnerException;
-            level++;
-        }
-
-        return string.Join(Environment.NewLine + Environment.NewLine, messages);
+        view.SetReportActionsEnabled(hasValidBaseFile);
     }
 }
