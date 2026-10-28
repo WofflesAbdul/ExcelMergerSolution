@@ -1,5 +1,4 @@
-﻿
-Imports Microsoft.Office.Interop.Excel
+﻿Imports Microsoft.Office.Interop.Excel
 
 ''' <summary>
 ''' Inserts header worksheets into a workbook according to header priority.
@@ -12,6 +11,7 @@ Public Class ExcelWorksheetHeaderInserter
     Public Sub CopyHeaderWorksheet(sourceSheet As Worksheet, targetSheets As Sheets, sheetName As String)
         If sourceSheet Is Nothing Then Throw New ArgumentNullException(NameOf(sourceSheet))
         If targetSheets Is Nothing Then Throw New ArgumentNullException(NameOf(targetSheets))
+        If targetSheets.Count = 0 Then Throw New InvalidOperationException("The destination workbook has no worksheets.")
 
         Dim insertionIndex As Integer = 1
         Dim insertionSheet As Worksheet = Nothing
@@ -28,9 +28,7 @@ Public Class ExcelWorksheetHeaderInserter
                     Dim existingPriority As Integer = HeaderSequence.GetHeaderPriority(worksheet.Name)
 
                     ' Header sheets are expected to be grouped at the beginning.
-                    If existingPriority = Integer.MaxValue Then
-                        Exit For
-                    End If
+                    If existingPriority = Integer.MaxValue Then Exit For
 
                     ' Insert after headers of equal or higher priority.
                     If existingPriority > newPriority Then

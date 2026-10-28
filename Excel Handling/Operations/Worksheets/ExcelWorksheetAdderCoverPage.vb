@@ -1,132 +1,65 @@
-﻿Imports System.IO
-Imports System.Runtime.InteropServices
-Imports System.Threading
-Imports Excel = Microsoft.Office.Interop.Excel
+﻿Imports Excel = Microsoft.Office.Interop.Excel
 
 ''' <summary>
-''' Handles report template operations on Excel workbooks.
+''' Handles adding a Cover Page worksheet from a report template.
 ''' </summary>
 Public Class ExcelWorksheetAdderCoverPage
 
     ''' <summary>
-    ''' Adds the cover page from a report template to an existing workbook.
+    ''' Adds the Cover Page from a report template to an existing workbook.
     ''' </summary>
-    ''' <param name="baseFile">The path to the workbook to modify.</param>
-    ''' <param name="templateFile">The path to the report template.</param>
-    ''' <param name="reportProgress">Callback for reporting operation progress.</param>
-    ''' <param name="reportStatus">Callback for reporting operation status.</param>
     Public Sub AddCoverPage(baseFile As String, templateFile As String, reportProgress As Action(Of Integer), reportStatus As Action(Of String))
-        If String.IsNullOrWhiteSpace(baseFile) OrElse Not File.Exists(baseFile) Then
-            Throw New FileNotFoundException("The selected base workbook could not be found.", baseFile)
-        End If
+        Const sheetName As String = "Cover Page"
 
-        If String.IsNullOrWhiteSpace(templateFile) OrElse Not File.Exists(templateFile) Then
-            Throw New FileNotFoundException("The report template could not be found.", templateFile)
-        End If
+        Using messageFilter As New ExcelInteropHelper.ExcelMessageFilterScope()
+            Using session As New ExcelWorkbookSession(baseFile, templateFile)
+                Dim targetSheets As Excel.Sheets = Nothing
+                Dim templateSheets As Excel.Sheets = Nothing
+                Dim sourceSheet As Excel.Worksheet = Nothing
 
-        Const coverSheetName As String = "Cover Page"
+                Try
+                    reportProgress?.Invoke(0)
+                    reportStatus?.Invoke("Opening selected workbook and report template...")
 
-        Dim excel As Excel.Application = Nothing
-        Dim targetWorkbook As Excel.Workbook = Nothing
-        Dim templateWorkbook As Excel.Workbook = Nothing
-        Dim coverSheet As Excel.Worksheet = Nothing
-        Dim targetSheets As Excel.Sheets = Nothing
-        Dim targetWorksheet As Excel.Worksheet = Nothing
-        Dim headerInserter As New ExcelWorksheetHeaderInserter()
+                    targetSheets = session.DestinationWorkbook.Worksheets
+                    templateSheets = session.SourceWorkbook.Worksheets
 
-        Try
-            reportProgress?.Invoke(0)
-            reportStatus?.Invoke("Opening selected workbook...")
+                    reportProgress?.Invoke(20)
+                    reportStatus?.Invoke("Checking for an existing Cover Page...")
 
-            excel = New Excel.Application With {
-                .Visible = False,
-                .DisplayAlerts = False
-            }
-
-            targetWorkbook = excel.Workbooks.Open(baseFile)
-
-            reportProgress?.Invoke(20)
-            reportStatus?.Invoke("Checking for existing cover page...")
-
-            Try
-                For i As Integer = 1 To targetWorkbook.Worksheets.Count
-                    targetWorksheet = TryCast(targetWorkbook.Worksheets(i), Excel.Worksheet)
-
-                    If targetWorksheet IsNot Nothing AndAlso String.Equals(targetWorksheet.Name, coverSheetName, StringComparison.OrdinalIgnoreCase) Then
+                    If ExcelWorksheetHelper.WorksheetExists(targetSheets, sheetName) Then
                         Throw New InvalidOperationException("The workbook already contains a Cover Page.")
                     End If
 
-                    If targetWorksheet IsNot Nothing Then
-                        Marshal.ReleaseComObject(targetWorksheet)
-                        targetWorksheet = Nothing
+                    reportProgress?.Invoke(35)
+                    reportStatus?.Invoke("Checking report template...")
+
+                    sourceSheet = ExcelWorksheetHelper.GetWorksheetIfExists(templateSheets, sheetName)
+
+                    If sourceSheet Is Nothing Then
+                        Throw New InvalidOperationException("The template does not contain a worksheet named '" & sheetName & "'.")
                     End If
-                Next
-            Finally
-                If targetWorksheet IsNot Nothing Then
-                    Marshal.ReleaseComObject(targetWorksheet)
-                    targetWorksheet = Nothing
-                End If
-            End Try
 
-            reportProgress?.Invoke(35)
-            reportStatus?.Invoke("Opening report template...")
+                    reportProgress?.Invoke(60)
+                    reportStatus?.Invoke("Copying Cover Page...")
 
-            templateWorkbook = excel.Workbooks.Open(templateFile, ReadOnly:=True)
-            coverSheet = TryCast(templateWorkbook.Worksheets(coverSheetName), Excel.Worksheet)
+                    Dim headerInserter As New ExcelWorksheetHeaderInserter()
+                    headerInserter.CopyHeaderWorksheet(sourceSheet, targetSheets, sheetName)
 
-            If coverSheet Is Nothing Then
-                Throw New InvalidOperationException($"The template does not contain a worksheet named '{coverSheetName}'.")
-            End If
+                    reportProgress?.Invoke(80)
+                    reportStatus?.Invoke("Saving workbook...")
 
-            reportProgress?.Invoke(60)
-            reportStatus?.Invoke("Copying cover page...")
+                    session.SaveDestination()
 
-            targetSheets = targetWorkbook.Worksheets
-            headerInserter.CopyHeaderWorksheet(coverSheet, targetSheets, coverSheetName)
-
-            reportProgress?.Invoke(80)
-            reportStatus?.Invoke("Saving workbook...")
-
-            targetWorkbook.Save()
-
-            reportProgress?.Invoke(100)
-            reportStatus?.Invoke("Cover page added successfully.")
-        Finally
-            If targetWorksheet IsNot Nothing Then Marshal.ReleaseComObject(targetWorksheet)
-            If coverSheet IsNot Nothing Then Marshal.ReleaseComObject(coverSheet)
-            If targetSheets IsNot Nothing Then Marshal.ReleaseComObject(targetSheets)
-
-            If templateWorkbook IsNot Nothing Then
-                Try
-                    Thread.Sleep(200)
-                    templateWorkbook.Close(SaveChanges:=False)
-                Catch
-                    ' Continue cleanup if Excel rejects the close request.
+                    reportProgress?.Invoke(100)
+                    reportStatus?.Invoke("Cover Page added successfully.")
                 Finally
-                    Marshal.ReleaseComObject(templateWorkbook)
+                    ExcelInteropHelper.ReleaseComObject(sourceSheet)
+                    ExcelInteropHelper.ReleaseComObject(templateSheets)
+                    ExcelInteropHelper.ReleaseComObject(targetSheets)
                 End Try
-            End If
-
-            If targetWorkbook IsNot Nothing Then
-                Try
-                    targetWorkbook.Close(SaveChanges:=False)
-                Catch
-                    ' Continue cleanup if Excel rejects the close request.
-                Finally
-                    Marshal.ReleaseComObject(targetWorkbook)
-                End Try
-            End If
-
-            If excel IsNot Nothing Then
-                Try
-                    excel.Quit()
-                Catch
-                    ' Continue cleanup if Excel rejects the quit request.
-                Finally
-                    Marshal.ReleaseComObject(excel)
-                End Try
-            End If
-        End Try
+            End Using
+        End Using
     End Sub
 
 End Class

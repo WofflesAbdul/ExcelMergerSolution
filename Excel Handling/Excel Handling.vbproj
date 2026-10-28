@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Interop\ExcelInteropHelper.vb" />
+    <Compile Include="Interop\ExcelWorkbookSession.vb" />
     <Compile Include="Operations\Workbook\ExcelWorkbookCreator.vb" />
     <Compile Include="Operations\Workbook\ExcelWorkbookMerger.vb" />
     <Compile Include="Operations\Worksheets\ExcelWorksheetAdderCoverPage.vb" />
@@ -96,6 +97,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Models\SheetNameParsingInfo.vb" />
+    <Compile Include="Utilities\ExcelWorksheetHelper.vb" />
+    <Compile Include="Utilities\ExcelSummaryReferenceRepairer.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
